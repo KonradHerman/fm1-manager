@@ -1,0 +1,124 @@
+# XcodeGen spec, the source of truth for the Xcode project. Regenerate with
+# `cd ios && xcodegen` after editing; FM1Dock.xcodeproj is generated (do not edit it by hand).
+# SPDX-License-Identifier: GPL-3.0-only (the app bundles fm1-dock's GPL-3.0 installer: see LICENSE)
+# The app is "FM-1 Manager" (CFBundleDisplayName below). The project, target, scheme and product keep the internal name
+# FM1Dock: renaming them would change the executable, the Swift module and the archive, for nothing a user sees.
+name: FM1Dock
+options:
+  bundleIdPrefix: com.klhoud
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "4"
+    # Your Apple Developer team ID (Membership page on developer.apple.com): the one place to change it to build
+    # with your own account (with your own bundle id below; scripts/testflight.sh reads it from here).
+    DEVELOPMENT_TEAM: XTMDNXX2SQ
+    CODE_SIGN_STYLE: Automatic
+    # FM1_DOCK: YES (the default, what ships) bundles fm1-dock's installer (App/Resources/web: the offline "Install
+    # from Library" page, Rigs' page, dock.js, install/*.js, GPL-3.0) and offers fm1-dock's site, the library and
+    # Rigs. NO is the hub-only app: only the Firmware Hub and Hands, and none of fm1-dock's files in the bundle. Flip it
+    # here (then run xcodegen), or for one build: `xcodebuild ... FM1_DOCK=NO`. The Swift condition, the plist
+    # condition and the resource exclusion follow it.
+    FM1_DOCK: YES
+    FM1_DOCK_SWIFT_YES: FM1_DOCK
+    FM1_DOCK_SWIFT_NO: ""
+    # (SWIFT_ACTIVE_COMPILATION_CONDITIONS is set per target, so $(inherited) keeps the project's DEBUG)
+
+packages:
+  FM1Kit:
+    path: FM1Kit
+
+targets:
+  FM1Dock:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+        excludes: ["Info.plist", "Resources/web"]
+      # the offline page and fm1-dock's installer JS, kept as a folder (web/install/... must stay a tree)
+      - path: App/Resources/web
+        type: folder
+        buildPhase: resources
+        # (left out of the bundle entirely when FM1_DOCK is NO: EXCLUDED_SOURCE_FILE_NAMES below)
+    dependencies:
+      - package: FM1Kit
+        product: FM1Kit
+      - sdk: CoreAudioKit.framework
+    settings:
+      base:
+        # (your own, to build with your own team)
+        PRODUCT_BUNDLE_IDENTIFIER: com.klhoud.fm1
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) $(FM1_DOCK_SWIFT_$(FM1_DOCK))
+        PRODUCT_NAME: FM1Dock
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # the icon colours chosen in Settings (AppIconChoice in HomeView.swift; drawn by icons/src/render.swift)
+        ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
+        ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: >-
+          AppIcon-Black AppIcon-BlackGreen AppIcon-GreyBlack AppIcon-GreyBlue
+          AppIcon-WhiteGrey AppIcon-WhiteGreen AppIcon-Purple
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: YES
+        # the document types, the library in Files, Bluetooth: App/Info.plist (merged with the generated keys)
+        INFOPLIST_FILE: App/Info.plist
+        INFOPLIST_KEY_CFBundleDisplayName: FM-1 Manager
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
+        # HTTPS only, no custom crypto: exempt.
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: >-
+          UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: >-
+          UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown
+          UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: >-
+          FM-1 Manager can connect to an FM-1 over Bluetooth MIDI when you pair it here. USB is what installs use.
+        # Info.plist goes through the C preprocessor: Debug alone may create virtual MIDI endpoints (the tests)
+        INFOPLIST_PREPROCESS: YES
+        FM1_DOCK_PLIST_YES: FM1_DOCK=1
+        FM1_DOCK_PLIST_NO: ""
+        INFOPLIST_PREPROCESSOR_DEFINITIONS: $(FM1_DOCK_PLIST_$(FM1_DOCK))
+        # hub-only: fm1-dock's files (the whole web folder) are not copied into the app at all
+        FM1_DOCK_EXCLUDES_YES: ""
+        FM1_DOCK_EXCLUDES_NO: web
+        EXCLUDED_SOURCE_FILE_NAMES: $(FM1_DOCK_EXCLUDES_$(FM1_DOCK))
+      configs:
+        Debug:
+          INFOPLIST_PREPROCESSOR_DEFINITIONS: FM1_VIRTUAL_MIDI=1 $(FM1_DOCK_PLIST_$(FM1_DOCK))
+
+  FM1DockTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: AppTests
+    dependencies:
+      - target: FM1Dock
+      - package: FM1Kit
+        product: FM1KitTestSupport
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.klhoud.fm1.tests
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) $(FM1_DOCK_SWIFT_$(FM1_DOCK))
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/FM1Dock.app/FM1Dock"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  FM1Dock:
+    build:
+      targets:
+        FM1Dock: all
+        FM1DockTests: [test]
+    test:
+      targets:
+        - FM1DockTests
+      environmentVariables:
+        FM1_OFFLINE: "1"

@@ -1,0 +1,62 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: GPL-3.0-only
+     FM-1 Manager's offline page: installs the .fwsc and .dock files in the app's library with fm1-dock's own
+     installer (dock.js and install/*.js, unchanged copies from fm1-dock, GPL-3.0-only: see LICENSE.txt). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Install from the library</title>
+<style>
+  :root { color-scheme: light dark; --bg: #f6f6f8; --card: #fff; --fg: #111; --dim: #666; --line: #ddd; --acc: #0a66d8; --bad: #c0262d; --ok: #18794e; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #000; --card: #1c1c1e; --fg: #f2f2f2; --dim: #9a9a9f; --line: #333; --acc: #4b9cff; --bad: #ff6b6b; --ok: #4cc38a; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px 16px 40px; font: 16px/1.4 -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+  h1 { font-size: 22px; margin: 4px 0 4px; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--dim); margin: 22px 0 8px; font-weight: 600; }
+  p { margin: 6px 0; }
+  .dim { color: var(--dim); font-size: 14px; }
+  .card { background: var(--card); border-radius: 12px; padding: 12px 14px; margin: 8px 0; border: 1px solid var(--line); }
+  .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+  .name { font-weight: 600; word-break: break-all; }
+  .meta { color: var(--dim); font-size: 13px; }
+  button { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 9px 14px; background: var(--acc); color: #fff; flex: none; }
+  button.quiet { background: transparent; color: var(--acc); border: 1px solid var(--line); }
+  button:disabled { opacity: .45; }
+  progress { width: 100%; height: 8px; margin-top: 10px; }
+  #status { min-height: 1.4em; font-weight: 500; }
+  #status.bad { color: var(--bad); } #status.ok { color: var(--ok); }
+  .mods { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .mod { border: 1px solid var(--line); border-radius: 8px; padding: 3px 8px; font-size: 14px; display: inline-flex; gap: 6px; align-items: center; }
+  .mod button { padding: 2px 8px; font-size: 13px; background: var(--bad); }
+  .empty { color: var(--dim); text-align: center; padding: 18px 0; }
+  .warn { border-left: 3px solid var(--bad); padding-left: 10px; }
+</style>
+</head>
+<body>
+<h1>Install from your library</h1>
+<p class="dim">Firmware (<b>.fwsc</b>) and fm1-dock modules (<b>.dock</b>) that you added to FM-1 Manager's library, installed
+  over USB with fm1-dock's own installer. The installer checks each file first (its identity, its update loader, every
+  file's CRC) and refuses a firmware made for another device.</p>
+
+<h2>Your FM-1</h2>
+<div class="card" id="device">
+  <div class="row"><span id="dev-text">Not checked yet.</span><button id="check" class="quiet">Check</button></div>
+  <div id="dev-mods" class="mods"></div>
+</div>
+
+<h2>Library</h2>
+<div id="files"><p class="empty">Loading…</p></div>
+
+<div class="card" id="progress-card" hidden>
+  <p id="status" role="status"></p>
+  <progress id="bar" max="100" value="0"></progress>
+</div>
+
+<p class="dim warn">Keep the app open and the FM-1 plugged in until an install says it is done. If it is cut off, the FM-1
+  stays in update mode: plug it in again and install the same firmware once more to finish. Installing firmware is at your
+  own risk; holding OCT− at power-on starts the FM-1's USB rescue (that needs a computer).</p>
+
+<script type="module" src="local.js"></script>
+</body>
+</html>

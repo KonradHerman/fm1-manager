@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+#if FM1_VIRTUAL_MIDI
+	<!-- Debug only: iOS lets an app create virtual MIDI endpoints (the tests' simulated FM-1) only with this mode -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+	</array>
+#endif
+#if FM1_DOCK
+	<!-- (FM1_DOCK builds only: the hub-only app has no library, so it neither shows in Files nor opens these files) -->
+	<!-- The library: the app's Documents folder, shown in Files (On My iPhone > FM-1 Manager) -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<!-- .fwsc and .dock files: "Open in FM-1 Manager" from Files, Safari, Mail (copied into the library) -->
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>FM-1 firmware</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.klhoud.fm1.fwsc</string>
+			</array>
+		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>fm1-dock module</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Alternate</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.klhoud.fm1.dock</string>
+			</array>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.klhoud.fm1.fwsc</string>
+			<key>UTTypeDescription</key>
+			<string>FM-1 firmware package</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>fwsc</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeIdentifier</key>
+			<string>com.klhoud.fm1.dock</string>
+			<key>UTTypeDescription</key>
+			<string>fm1-dock module</string>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>dock</string>
+					<string>hrbr</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+#endif
+</dict>
+</plist>
