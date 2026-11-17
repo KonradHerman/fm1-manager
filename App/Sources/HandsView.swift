@@ -78,8 +78,17 @@ final class HandsModel {
 	func start() {
 		guard tiltAvailable, !motion.isDeviceMotionActive else { return }
 		motion.deviceMotionUpdateInterval = 1.0 / 100
-		let st = tiltState, hands = hands
-		motion.startDeviceMotionUpdates(to: motionQueue) { [weak self] m, _ in
+		motion.startDeviceMotionUpdates(to: motionQueue, withHandler: Self.motionHandler(tiltState, hands) { [weak self] value in
+			Task { @MainActor [weak self] in self?.tiltValue = value }
+		})
+	}
+
+	/// The motion handler, made outside the main actor. CoreMotion calls it on `motionQueue`; a closure written
+	/// inside a @MainActor method is itself main-actor isolated, and Swift 6 traps when it then runs on another
+	/// queue (the crash on opening Hands on a real iPhone; the simulator has no motion, so it never ran there).
+	nonisolated private static func motionHandler(_ st: TiltState, _ hands: Hands,
+	                                              shown: @escaping @Sendable (Double) -> Void) -> CMDeviceMotionHandler {
+		{ m, _ in
 			guard let m else { return }
 			let angle = m.attitude.roll
 			let (on, value, target) = st.lock.withLock { () -> (Bool, Double, ControlTarget) in
@@ -91,7 +100,7 @@ final class HandsModel {
 			if on {
 				hands.control(.tilt, target, target == .pitchBend ? value : max(0, value))
 			}
-			Task { @MainActor [weak self] in self?.tiltValue = value }
+			shown(value)
 		}
 	}
 
