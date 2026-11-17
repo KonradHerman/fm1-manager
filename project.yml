@@ -14,7 +14,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "4"
+    CURRENT_PROJECT_VERSION: "5"
     # Your Apple Developer team ID (Membership page on developer.apple.com): the one place to change it to build
     # with your own account (with your own bundle id below; scripts/testflight.sh reads it from here).
     DEVELOPMENT_TEAM: XTMDNXX2SQ
