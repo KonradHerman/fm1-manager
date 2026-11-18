@@ -8,7 +8,7 @@ FM-1 Manager
 
 ## Subtitle (30)
 
-Firmware & modules for FM-1
+Unofficial companion for FM-1
 
 ## Promotional text (170)
 

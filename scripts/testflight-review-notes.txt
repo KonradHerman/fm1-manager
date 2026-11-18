@@ -1,0 +1,9 @@
+FM-1 Manager is a companion app for a hardware synthesizer, the M-VAVE FM-1, which connects to the iPhone as a class-compliant USB MIDI device (USB-C cable or a camera adapter). It is unofficial and open source (GPL-3.0): https://github.com/KonradHerman/fm1-manager
+
+No account or sign-in is needed.
+
+Without an FM-1 attached you can still: open the app, browse the two firmware installer sites it hosts (they show their own 'connect' prompts), open Hands (a touch keyboard, XY pad and tilt control that send MIDI), open Settings and change the app icon colour. The home screen shows 'No FM-1 connected'.
+
+With an FM-1 attached, the app gives those installer pages Web MIDI through CoreMIDI so they can install firmware and add or remove modules on the synth, keeps firmware and module files in its Documents folder, and applies saved sets of modules ('Rigs').
+
+The app uses Bluetooth only if the user chooses to pair a Bluetooth MIDI device, and the motion sensor only on the Hands screen while the tilt control is held.
