@@ -29,12 +29,24 @@ FM-1** (`FakeFM1`, see below) on virtual CoreMIDI endpoints, on a Mac and in the
 | **fm1-dock's page** | joakimeriksson.github.io/fm1-dock, unchanged: install fm1-dock, add and remove its modules, its console | The owner reports it working on the one iPhone and FM-1 above; which operations were run there was not recorded. Automated: its console and device panel connect to the simulated FM-1, and a module goes in through its file input. |
 | **Library** | .fwsc and .dock files kept in the app (visible in Files as On My iPhone › FM-1 Manager); import from Files, Safari, Mail; hand a file to a page's file input | Simulated FM-1 and simulator only. |
 | **Install from Library** | an offline page that installs a library file with fm1-dock's own installer code | Simulated FM-1 only, including a whole 610 KiB firmware install (both update stages, every byte checked). Not yet on hardware. |
-| **Rigs** | named sets of fm1-dock modules kept on the phone; "Save what's on my FM-1"; Apply changes only what differs, plans around the module area's free gaps, checks the device after every step, and can Resume after a cut cable; modules from fm1-dock's published catalogue, checked against its SHA-256 | Simulated FM-1 only (its module area modelled on fm1-dock's `dock.c`). In a TestFlight build on the owner's phone, **no result reported yet**. |
-| **Hands** | a performance screen: XY pad (CC 74 / 71 by default, fm1-dock's KNOB1 / KNOB2), a touch keyboard with slides, latch, scale lock and velocity by touch position, tilt to a chosen control while held, panic | MIDI logic tested against a virtual destination (no stuck notes, rate limits, ranges). The screen itself, the feel, the latency and tilt from the real motion sensor: untested. In the same TestFlight build, **no result reported yet**. |
 | **App icon colours** | eight icon colours to match your FM-1, chosen in Settings | Simulator. |
+
+**Experimental** (on the home screen under "Experimental": new, and may change or misbehave):
+
+| Feature | What it is | Tested |
+| --- | --- | --- |
+| **Rigs** | named sets of fm1-dock modules kept on the phone; "Save what's on my FM-1"; Apply changes only what differs, plans around the module area's free gaps, checks the device after every step, and can Resume after a cut cable; modules from fm1-dock's published catalogue, checked against its SHA-256 | Simulated FM-1 only (its module area modelled on fm1-dock's `dock.c`). In a TestFlight build on the owner's phone, **no result reported yet**. |
+| **Hands** | a performance screen: XY pad (CC 74 / 71 by default, fm1-dock's KNOB1 / KNOB2), a touch keyboard with slides, latch, scale lock and velocity by touch position, tilt to a chosen control while held, panic | Unfinished. Build 4 crashed on opening it on a real iPhone (fixed since, not yet confirmed on the phone). MIDI logic tested against a virtual destination (no stuck notes, rate limits, ranges). The feel, the latency and tilt from the real motion sensor: untested. |
 | **Jam in GarageBand** | a note on using the FM-1 as GarageBand's keyboard; a link to GarageBand in the App Store | Not tested. fm1-dock's firmware declares a USB audio input, but nobody has tried recording it in GarageBand. |
 
 Known rough edges are listed under [Contributing](#contributing).
+
+**iPhone only for now.** Nobody has used the app on an iPad yet, and a device family can be added to an App Store app
+later but never taken away, so 1.0 is for iPhone. iPad support is wanted: if you have an iPad and an FM-1, see
+[Contributing](#contributing).
+
+**Privacy:** the app collects nothing and has no account; [PRIVACY.md](PRIVACY.md) says exactly what it connects to.
+**Help:** [SUPPORT.md](SUPPORT.md).
 
 ## Building it
 
@@ -78,6 +90,10 @@ cd FM1Kit && FM1_OFFLINE=1 swift test
 xcodebuild -project FM1Dock.xcodeproj -scheme FM1Dock -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
 xcodebuild -project FM1Dock.xcodeproj -scheme FM1Dock -destination 'platform=iOS Simulator,name=iPhone 17 Pro' FM1_DOCK=NO test
 ```
+
+Debug builds also compile the simulated FM-1 (`FM1Kit/Sources/FM1KitTestSupport`) into the app, for its tests and for
+the store screenshots: `scripts/screenshots.sh` launches the app with `-FM1Demo` (see `App/Sources/DemoMode.swift`),
+which attaches a simulated FM-1 that the app's MIDI engine sees alone. Release builds leave all of that out.
 
 Debug builds may create virtual MIDI endpoints (iOS allows that only with the `audio` background mode, which
 `App/Info.plist` adds for Debug alone); Release builds do not have it.
