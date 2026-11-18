@@ -178,7 +178,12 @@ final class DockPageTests: XCTestCase {
 
 		// the console: Connect -> HELLO, LIST -> "connected: <port>"
 		try await h.js("document.getElementById('c-connect').click()")
-		try await h.waitFor("document.getElementById('c-state').textContent.startsWith('connected:')", timeout: 20)
+		do { try await h.waitFor("document.getElementById('c-state').textContent.startsWith('connected:')", timeout: 20) } catch {
+			let state = (try? await h.text("#c-state")) ?? "?"
+			let ports = (try? await h.js("const a = await navigator.requestMIDIAccess(); return [...a.inputs.values(), ...a.outputs.values()].map((p) => p.type + ':' + p.name + ':' + p.state).join(', ')")) ?? "?"
+			XCTFail("console not connected: c-state '\(state)'; ports \(ports); engine \(h.engine.endpoints.map(\.name)); fake got \(f.received.count) messages; events \(f.events.suffix(5))")
+			throw error
+		}
 		let v9 = try await h.text("#c-state")
 		XCTAssertEqual(v9, "connected: \(f.portName)")
 

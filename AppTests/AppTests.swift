@@ -153,18 +153,19 @@ final class SimulatorEndToEndTests: XCTestCase {
 
 @MainActor
 final class AppIconTests: XCTestCase {
-	/// Every colour in Settings is an alternate icon the built app declares (iPhone and iPad), and has its preview image.
+	/// Every colour in Settings is an alternate icon the built app declares, and has its preview image; the app is
+	/// iPhone only (1.0). (The asset compiler still writes a CFBundleIcons~ipad copy for the universal icon sets; iOS
+	/// ignores it on an iPhone-only app.)
 	func testTheIconChoicesMatchTheBundle() throws {
 		let names = Set(AppIconChoice.all.compactMap(\.name))
 		XCTAssertEqual(names.count, AppIconChoice.all.count - 1, "one primary (nil), the rest named")
 		// the file itself: infoDictionary folds the ~ipad keys away on an iPhone
 		let url = try XCTUnwrap(Bundle.main.url(forResource: "Info", withExtension: "plist"))
 		let plist = try XCTUnwrap(PropertyListSerialization.propertyList(from: Data(contentsOf: url), format: nil) as? [String: Any])
-		for key in ["CFBundleIcons", "CFBundleIcons~ipad"] {
-			let icons = try XCTUnwrap(plist[key] as? [String: Any], key)
-			let alternates = try XCTUnwrap(icons["CFBundleAlternateIcons"] as? [String: Any], key)
-			XCTAssertEqual(Set(alternates.keys), names, key)
-		}
+		let icons = try XCTUnwrap(plist["CFBundleIcons"] as? [String: Any])
+		let alternates = try XCTUnwrap(icons["CFBundleAlternateIcons"] as? [String: Any])
+		XCTAssertEqual(Set(alternates.keys), names)
+		XCTAssertEqual(plist["UIDeviceFamily"] as? [Int], [1], "iPhone only")
 		for choice in AppIconChoice.all { XCTAssertNotNil(UIImage(named: choice.preview), choice.preview) }
 	}
 }
