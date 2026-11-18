@@ -208,6 +208,9 @@ struct RigDetailView: View {
 			.navigationTitle(rig.name)
 			.sheet(item: $editing) { RigEditor(rig: $0) }
 			.sheet(isPresented: $applying) { ApplyView(rig: rig) }
+			#if DEBUG
+			.task { if DemoMode.value("-FM1Open") == "plan" { try? await Task.sleep(nanoseconds: 800_000_000); applying = true } }
+			#endif
 			.confirmationDialog("Delete \(rig.name)?", isPresented: $confirmDelete, titleVisibility: .visible) {
 				Button("Delete the rig", role: .destructive) { app.rigs.delete(rig); dismiss() }
 			} message: { Text("Only the rig: the modules stay in the library and on the FM-1.") }

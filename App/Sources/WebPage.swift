@@ -133,7 +133,18 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 	}
 
 	func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) { loadError = nil }
-	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { hasLoaded = true }
+	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+		#if DEBUG
+		if !hasLoaded, let sel = DemoMode.value("-FM1Click") {          // (the screenshots: an installer's Connect)
+			Task { [weak self] in
+				try? await Task.sleep(nanoseconds: 1_500_000_000)
+				_ = try? await self?.webView.callAsyncJavaScript("const e = document.querySelector(s); if (e) e.click()",
+				                                                arguments: ["s": sel], in: nil, contentWorld: .page)
+			}
+		}
+		#endif
+		hasLoaded = true
+	}
 
 	func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
 		failed(error)

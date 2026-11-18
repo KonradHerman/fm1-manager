@@ -41,6 +41,9 @@ targets:
       - path: App
         excludes: ["Info.plist", "Resources/web"]
       # the offline page and fm1-dock's installer JS, kept as a folder (web/install/... must stay a tree)
+      # the simulated FM-1 (FM1KitTestSupport's sources), compiled into Debug builds only, for -FM1Demo (the store
+      # screenshots, DemoMode.swift) and the app's tests; Release leaves the files out (EXCLUDED_SOURCE_FILE_NAMES)
+      - path: FM1Kit/Sources/FM1KitTestSupport
       - path: App/Resources/web
         type: folder
         buildPhase: resources
@@ -96,6 +99,8 @@ targets:
       configs:
         Debug:
           INFOPLIST_PREPROCESSOR_DEFINITIONS: FM1_VIRTUAL_MIDI=1 $(FM1_DOCK_PLIST_$(FM1_DOCK))
+        Release:
+          EXCLUDED_SOURCE_FILE_NAMES: $(FM1_DOCK_EXCLUDES_$(FM1_DOCK)) FakeFM1.swift FM1Protocol.swift SyntheticDock.swift WebHarness.swift
 
   FM1DockTests:
     type: bundle.unit-test
@@ -104,8 +109,6 @@ targets:
       - path: AppTests
     dependencies:
       - target: FM1Dock
-      - package: FM1Kit
-        product: FM1KitTestSupport
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.klhoud.fm1.tests

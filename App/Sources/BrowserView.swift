@@ -88,7 +88,9 @@ struct BrowserView: View {
 			.safeAreaInset(edge: .top, spacing: 0) {
 				VStack(spacing: 0) {
 					if app.fm1 == nil && !page.busy { NoDeviceBanner() }
-					if page.busy {
+					// (only while the page itself says an install runs: plain SysEx traffic, a Connect, keeps the
+					// screen awake but is no install)
+					if page.pageBusy {
 						Label("Installing: keep the app open and the FM-1 plugged in", systemImage: "bolt.horizontal.circle")
 							.font(.footnote.weight(.semibold)).frame(maxWidth: .infinity)
 							.padding(8).background(Color.orange.opacity(0.18))

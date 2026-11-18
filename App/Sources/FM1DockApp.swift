@@ -23,6 +23,22 @@ struct FM1DockApp: App {
 					}
 			}
 			.environment(app)
+			#if DEBUG
+			.onAppear {
+				guard path.isEmpty, let to = DemoMode.value("-FM1Open") else { return }
+				switch to {
+				case "hub": path = [.site(.hub)]
+				case "hands": path = [.hands]
+				#if FM1_DOCK
+				case "dock": path = [.site(.dock)]
+				case "local": path = [.site(.local)]
+				case "library": path = [.library]
+				case "rig", "plan": if let r = app.rigs.rigs.first { path = [.rig(r.id)] }
+				#endif
+				default: break
+				}
+			}
+			#endif
 			.onChange(of: app.requestedRoute) {
 				if let r = app.requestedRoute { path = [r]; app.requestedRoute = nil }
 			}

@@ -129,7 +129,15 @@ final class AppModel {
 	}
 	private var observation: MIDIEngine.Observation?
 
+	#if DEBUG
+	@ObservationIgnored private var demoFilter: MIDIEngine.Filter?
+	#endif
+
 	init() {
+		#if DEBUG
+		demoFilter = DemoMode.prepare(documents: library.folder)
+		library.refresh()
+		#endif
 		packetAPI = MIDIEngine.PacketAPI(rawValue: UserDefaults.standard.string(forKey: "packetAPI") ?? "") ?? .universal
 		startEngine()
 	}
@@ -142,7 +150,11 @@ final class AppModel {
 		engine = nil
 		do {
 			// every port, as a browser shows them: the pages pick the FM-1 by its name
-			let e = try MIDIEngine(clientName: "FM-1 Manager", inputAPI: packetAPI, outputAPI: packetAPI, filter: { _ in true })
+			var filter: MIDIEngine.Filter = { _ in true }
+			#if DEBUG
+			if let demo = demoFilter { filter = demo }             // (-FM1Demo: the simulated FM-1 alone)
+			#endif
+			let e = try MIDIEngine(clientName: "FM-1 Manager", inputAPI: packetAPI, outputAPI: packetAPI, filter: filter)
 			engine = e
 			engineError = nil
 			observation = e.observe(endpoints: { [weak self] list in onMain { self?.endpoints = list } },

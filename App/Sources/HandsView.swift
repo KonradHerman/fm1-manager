@@ -197,9 +197,9 @@ struct HandsView: View {
 				Picker("Channel", selection: $model.settings.channel) { ForEach(0..<16, id: \.self) { Text("Channel \($0 + 1)").tag($0) } }
 			} label: { Text("Ch \(model.settings.channel + 1)").font(.subheadline.monospacedDigit()) }
 			Divider().frame(height: 22)
-			Button { model.settings.lowestNote = max(12, model.settings.lowestNote - 12) } label: { Image(systemName: "minus") }
+			Button { model.settings.lowestNote = max(12, model.settings.lowestNote - 12) } label: { Image(systemName: "minus").frame(width: 16, height: 16) }
 			Text(noteName(model.settings.lowestNote)).font(.subheadline.monospacedDigit()).frame(minWidth: 30)
-			Button { model.settings.lowestNote = min(96, model.settings.lowestNote + 12) } label: { Image(systemName: "plus") }
+			Button { model.settings.lowestNote = min(96, model.settings.lowestNote + 12) } label: { Image(systemName: "plus").frame(width: 16, height: 16) }
 			Spacer(minLength: 4)
 			Toggle(isOn: $model.settings.latch) { Image(systemName: "pin") }.toggleStyle(.button).accessibilityLabel("Latch")
 			Toggle(isOn: $model.settings.scaleLock) { Text(model.settings.scaleLock ? model.settings.scale.label : "Scale") }

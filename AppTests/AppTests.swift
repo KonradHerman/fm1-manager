@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import CoreMotion
 import FM1Kit
-import FM1KitTestSupport
 import WebKit
 import XCTest
 @testable import FM1Dock

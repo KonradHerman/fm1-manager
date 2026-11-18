@@ -53,13 +53,14 @@ public final class FakeFM1: @unchecked Sendable {
 	///   - product: what it runs after an update
 	public init(identity: String = "FM-1_921", dockVersion: String? = "0.7", imageLength: Int = 0x2400,
 	            product: String = "FM-1_921", sourceAPI: EndpointAPI = .legacy, destinationAPI: EndpointAPI = .universal,
-	            token: String = String(UUID().uuidString.prefix(8))) throws {
+	            token: String = String(UUID().uuidString.prefix(8)), name: String? = nil) throws {
+		customName = name
 		self.identity = identity; self.dockVersion = dockVersion; self.imageLength = imageLength; self.product = product
 		self.sourceAPI = sourceAPI; self.destinationAPI = destinationAPI; self.token = token
 		_written = [UInt8](repeating: 0, count: imageLength)
 		let st = MIDIClientCreateWithBlock("FakeFM1 \(token)" as CFString, &client, nil)
 		guard st == noErr else { throw MIDIEngineError.coreMIDI("MIDIClientCreate", st) }
-		try plugIn(name: Self.portName(identity: identity, token: token))
+		try plugIn(name: self.name(for: identity))
 		bootLog()
 	}
 
@@ -73,6 +74,20 @@ public final class FakeFM1: @unchecked Sendable {
 	}
 
 	/// The filter for the MIDIEngine under test: this fake's endpoints and nothing else.
+	/// A port name of the caller's choosing (a demo's "FM-1"); nil: "FM-1 Test <token>". With one, use idFilter.
+	private let customName: String?
+	private var _ids: Set<String> = []
+
+	private func name(for identity: String) -> String {
+		guard let n = customName else { return Self.portName(identity: identity, token: token) }
+		return identity.hasPrefix("ota-") ? "\(n) Update" : n
+	}
+
+	/// This fake's endpoints by their CoreMIDI unique ids (as they are now): for a port name a real device may share.
+	public var idFilter: MIDIEngine.Filter {
+		{ [weak self] e in self?.locked { self?._ids.contains(e.id) ?? false } ?? false }
+	}
+
 	public var filter: MIDIEngine.Filter {
 		let t = token
 		return { $0.name.hasSuffix(" Test \(t)") }
@@ -106,7 +121,7 @@ public final class FakeFM1: @unchecked Sendable {
 	/// The cable back in: the same identity's ports again, the flash as it was.
 	public func replug() throws {
 		guard source == 0 else { return }
-		try plugIn(name: Self.portName(identity: identity, token: token))
+		try plugIn(name: self.name(for: identity))
 	}
 	/// What happened, for a test's failure message.
 	public var events: [String] { locked { _events } }
@@ -145,7 +160,10 @@ public final class FakeFM1: @unchecked Sendable {
 			}
 		}
 		guard st == noErr else { throw MIDIEngineError.coreMIDI("MIDIDestinationCreate", st) }
-		locked { _portName = name }
+		var a: MIDIUniqueID = 0, b: MIDIUniqueID = 0
+		MIDIObjectGetIntegerProperty(source, kMIDIPropertyUniqueID, &a)
+		MIDIObjectGetIntegerProperty(destination, kMIDIPropertyUniqueID, &b)
+		locked { _portName = name; _ids = [String(a), String(b)] }
 		note("plugged in as \(name)")
 	}
 
@@ -162,7 +180,7 @@ public final class FakeFM1: @unchecked Sendable {
 		identity = newIdentity; dockVersion = dock; queueOTA = []; waiting = nil
 		locked { parser.reset() }
 		queue.asyncAfter(deadline: .now() + 0.3) { [self] in
-			try? plugIn(name: Self.portName(identity: newIdentity, token: token))
+			try? plugIn(name: name(for: newIdentity))
 			bootLog()
 		}
 	}
