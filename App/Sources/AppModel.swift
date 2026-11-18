@@ -145,7 +145,7 @@ final class AppModel {
 			let e = try MIDIEngine(clientName: "FM-1 Manager", inputAPI: packetAPI, outputAPI: packetAPI, filter: { _ in true })
 			engine = e
 			engineError = nil
-			observation = e.observe(endpoints: { [weak self] list in MainActor.assumeIsolated { self?.endpoints = list } },
+			observation = e.observe(endpoints: { [weak self] list in onMain { self?.endpoints = list } },
 			                        messages: { _ in })
 		} catch {
 			engineError = "CoreMIDI did not start: \(error)"

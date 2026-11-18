@@ -54,10 +54,12 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 		webView.navigationDelegate = self
 		webView.uiDelegate = self
 		bridge.attach(webView)
+		// KVO change handlers: @Sendable, so they are not main-actor isolated (KVO may call them on any thread);
+		// the state is read and set on the main actor
 		observers = [
-			webView.observe(\.title) { [weak self] w, _ in MainActor.assumeIsolated { self?.title = w.title ?? "" } },
-			webView.observe(\.canGoBack) { [weak self] w, _ in MainActor.assumeIsolated { self?.canGoBack = w.canGoBack } },
-			webView.observe(\.isLoading) { [weak self] w, _ in MainActor.assumeIsolated { self?.isLoading = w.isLoading } },
+			webView.observe(\.title) { @Sendable [weak self] _, _ in onMain { self?.title = self?.webView.title ?? "" } },
+			webView.observe(\.canGoBack) { @Sendable [weak self] _, _ in onMain { self?.canGoBack = self?.webView.canGoBack ?? false } },
+			webView.observe(\.isLoading) { @Sendable [weak self] _, _ in onMain { self?.isLoading = self?.webView.isLoading ?? false } },
 		]
 		webView.load(URLRequest(url: site.url))
 		poll = Task { [weak self] in

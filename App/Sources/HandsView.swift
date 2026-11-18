@@ -29,7 +29,7 @@ final class HandsModel {
 	private(set) var tiltOn = false
 	private(set) var tiltAvailable = false
 	var xy = CGPoint(x: 0.5, y: 0.5)
-	private let motion = CMMotionManager()
+	private let motion: CMMotionManager
 	private let motionQueue = OperationQueue()
 	private let tiltState = TiltState()
 
@@ -43,7 +43,9 @@ final class HandsModel {
 		var lastAngle = 0.0
 	}
 
-	init() {
+	/// - Parameter motion: the motion manager (a test passes one that hands it the handler CoreMotion would get)
+	init(motion: CMMotionManager = CMMotionManager()) {
+		self.motion = motion
 		let out = output
 		hands = Hands(send: { out.send($0) })
 		motionQueue.maxConcurrentOperationCount = 1
@@ -86,7 +88,7 @@ final class HandsModel {
 	/// The motion handler, made outside the main actor. CoreMotion calls it on `motionQueue`; a closure written
 	/// inside a @MainActor method is itself main-actor isolated, and Swift 6 traps when it then runs on another
 	/// queue (the crash on opening Hands on a real iPhone; the simulator has no motion, so it never ran there).
-	nonisolated private static func motionHandler(_ st: TiltState, _ hands: Hands,
+	nonisolated static func motionHandler(_ st: TiltState, _ hands: Hands,
 	                                              shown: @escaping @Sendable (Double) -> Void) -> CMDeviceMotionHandler {
 		{ m, _ in
 			guard let m else { return }

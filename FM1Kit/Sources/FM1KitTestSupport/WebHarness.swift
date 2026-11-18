@@ -32,8 +32,10 @@ public final class WebHarness: NSObject, WKNavigationDelegate, WKUIDelegate {
 
 	public init(filter: @escaping MIDIEngine.Filter, resolver: LocalSchemeHandler.Resolver? = nil,
 	            allowedOrigins: [String] = ["fm1dock://app"], userAgent: String? = nil,
-	            inputAPI: MIDIEngine.PacketAPI = .universal, outputAPI: MIDIEngine.PacketAPI = .universal) throws {
-		engine = try MIDIEngine(clientName: "FM1 WebHarness", inputAPI: inputAPI, outputAPI: outputAPI, filter: filter)
+	            inputAPI: MIDIEngine.PacketAPI = .universal, outputAPI: MIDIEngine.PacketAPI = .universal,
+	            callbackQueue: DispatchQueue = .main) throws {
+		engine = try MIDIEngine(clientName: "FM1 WebHarness", inputAPI: inputAPI, outputAPI: outputAPI,
+		                        callbackQueue: callbackQueue, filter: filter)
 		bridge = WebMIDIBridge(engine: engine, allowedOrigins: allowedOrigins)
 		let config = WKWebViewConfiguration()
 		config.websiteDataStore = .nonPersistent()

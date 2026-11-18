@@ -26,8 +26,8 @@ final class Recorder {
 	var observation: MIDIEngine.Observation?
 	init(_ engine: MIDIEngine) {
 		observation = engine.observe(
-			endpoints: { [weak self] l in MainActor.assumeIsolated { self?.endpoints = l } },
-			messages: { [weak self] m in MainActor.assumeIsolated { self?.messages += m } })
+			endpoints: { [weak self] l in onMain { self?.endpoints = l } },
+			messages: { [weak self] m in onMain { self?.messages += m } })
 	}
 }
 

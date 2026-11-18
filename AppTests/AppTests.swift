@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import CoreMotion
 import FM1Kit
 import FM1KitTestSupport
 import WebKit
@@ -197,6 +198,24 @@ final class HandsAppTests: XCTestCase {
 		XCTAssertTrue(got.contains([0xB0, model.settings.x == .cc(74) ? 74 : 0, 127]) || model.settings.x != .cc(74))
 	}
 
+	/// CoreMotion calls the tilt handler on its own queue; the simulator has no device motion, so a motion manager
+	/// that only keeps the handler HandsModel.start() gives it lets the test call it from a background queue, as
+	/// CoreMotion would. With the handler written inside the @MainActor method (build 4's crash) this traps.
+	func testTheMotionHandlerRunsOffTheMainThread() async {
+		let motion = CapturingMotionManager()
+		let model = HandsModel(motion: motion)
+		model.start()
+		guard let handler = motion.handler else { return XCTFail("start() gave CoreMotion no handler") }
+		nonisolated(unsafe) let h = handler
+		let done = expectation(description: "called on a background queue")
+		DispatchQueue.global().async {
+			XCTAssertFalse(Thread.isMainThread)
+			h(nil, nil)
+			done.fulfill()
+		}
+		await fulfillment(of: [done], timeout: 2)
+	}
+
 	func testHandsSettingsPersist() {
 		let model = HandsModel()
 		let before = model.settings
@@ -263,3 +282,14 @@ final class RigsAppTests: XCTestCase {
 	}
 }
 #endif
+
+/// A motion manager that says it has device motion and keeps the handler instead of starting the sensor.
+final class CapturingMotionManager: CMMotionManager, @unchecked Sendable {
+	var handler: CMDeviceMotionHandler?
+	override var isDeviceMotionAvailable: Bool { true }
+	override var isDeviceMotionActive: Bool { handler != nil }
+	override func startDeviceMotionUpdates(to queue: OperationQueue, withHandler handler: @escaping CMDeviceMotionHandler) {
+		self.handler = handler
+	}
+	override func stopDeviceMotionUpdates() { handler = nil }
+}

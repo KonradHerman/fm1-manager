@@ -120,6 +120,32 @@ final class WebMIDIShimTests: XCTestCase {
 		XCTAssertTrue(states.contains { $0[0] as? String == "input" && $0[1] as? String == "disconnected" && $0[3] as? Bool == true }, "\(states)")
 	}
 
+	/// The engine's callbacks on a queue that is not the main one: the bridge must hop to the main actor itself
+	/// (with MainActor.assumeIsolated alone this test traps, as a main-actor closure run off the main thread does).
+	func testTheBridgeCopesWithCallbacksOffTheMainQueue() async throws {
+		let f = try FakeFM1()
+		let page = "<!doctype html><script>window.go = async (n) => { const a = await navigator.requestMIDIAccess({ sysex: true }); const i = [...a.inputs.values()].find((p) => p.name === n); window.got = []; i.onmidimessage = (e) => got.push(Array.from(e.data)); return a.inputs.size; }</script>"
+		let h = try WebHarness(filter: f.filter, resolver: { _ in (Data(page.utf8), "text/html") },
+		                       callbackQueue: DispatchQueue(label: "not main"))
+		defer { h.close() }
+		try await h.load(URL(string: "fm1dock://app/index.html")!)
+		try await h.waitFor("true")
+		let end = Date().addingTimeInterval(5)
+		while h.engine.endpoints.count < 2 && Date() < end { try await Task.sleep(nanoseconds: 20_000_000) }
+		let n = try await h.js("return await go(n)", ["n": f.portName]) as? Int
+		XCTAssertEqual(n, 1)
+		f.emit(packetLists: [[[0xF0, 1, 2, 0xF7]], [[0x90, 60, 1]]])
+		try await h.waitFor("window.got.length >= 2", timeout: 5)
+		let got = try await h.js("return window.got") as? [[Int]]
+		XCTAssertEqual(got, [[0xF0, 1, 2, 0xF7], [0x90, 60, 1]])
+	}
+
+	func testOnMainFromAnyThread() async {
+		let done = expectation(description: "ran on the main actor")
+		DispatchQueue.global().async { onMain { XCTAssertTrue(Thread.isMainThread); done.fulfill() } }
+		await fulfillment(of: [done], timeout: 2)
+	}
+
 	/// A page of an origin the app does not allow gets no Web MIDI.
 	func testOtherOriginsGetNoMIDI() async throws {
 		let f = try FakeFM1()

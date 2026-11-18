@@ -52,8 +52,10 @@ public final class WebMIDIBridge: NSObject, WKScriptMessageHandlerWithReply {
 	public func attach(_ webView: WKWebView) {
 		self.webView = webView
 		observation = engine.observe(
-			endpoints: { [weak self] list in MainActor.assumeIsolated { self?.push(endpoints: list) } },
-			messages: { [weak self] msgs in MainActor.assumeIsolated { self?.push(messages: msgs) } })
+			// (the engine calls these on its callbackQueue, the main queue unless it was made with another: onMain
+			// copes with either)
+			endpoints: { [weak self] list in onMain { self?.push(endpoints: list) } },
+			messages: { [weak self] msgs in onMain { self?.push(messages: msgs) } })
 	}
 
 	/// Stops the traffic and lets go of the web view (the user content controller holds the bridge until then).
