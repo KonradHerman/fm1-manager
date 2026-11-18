@@ -62,6 +62,7 @@ struct BrowserView: View {
 			}
 		}
 		.navigationBarBackButtonHidden(true)
+		.warnsAboutWrites()
 		.onAppear {
 			if page == nil, let engine = app.engine { page = WebPage(site: site, engine: engine, library: app.library.folder) }
 		}
@@ -71,6 +72,18 @@ struct BrowserView: View {
 	private func content(_ page: WebPage) -> some View {
 		@Bindable var page = page
 		WebViewHost(webView: page.webView)
+			.overlay {
+				if let err = page.loadError, !page.hasLoaded {
+					ContentUnavailableView {
+						Label("\(site.title) did not load", systemImage: "wifi.exclamationmark")
+					} description: {
+						Text("\(err)\n\(site.url.scheme == "https" ? "This page comes from \(site.url.host ?? "the web"): the phone needs the internet for it." : "")")
+					} actions: {
+						Button("Try again") { page.goHome() }.buttonStyle(.borderedProminent)
+					}
+					.background(Color(.systemBackground))
+				}
+			}
 			.ignoresSafeArea(edges: .bottom)
 			.safeAreaInset(edge: .top, spacing: 0) {
 				VStack(spacing: 0) {

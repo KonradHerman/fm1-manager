@@ -32,15 +32,7 @@ struct HomeView: View {
 						}
 					}
 				}
-				Section {
-					NavigationLink(value: Route.hands) {
-						Label { VStack(alignment: .leading) { Text("Hands"); Text("XY pad, keys and tilt: more to play the FM-1 with").font(.caption).foregroundStyle(.secondary) } }
-							icon: { Image(systemName: "hand.raised.fingers.spread") }
-					}
-					GarageBandRow()
-				} header: { Text("Play") }
 				#if FM1_DOCK
-				RigsSection(path: $path)
 				Section {
 					NavigationLink(value: Route.library) {
 						LabeledContent("Library") { Text("\(app.library.files.count) files") }
@@ -50,13 +42,31 @@ struct HomeView: View {
 				}
 				#endif
 				Section {
+					#if FM1_DOCK
+					RigsRows(path: $path)
+					#endif
+					NavigationLink(value: Route.hands) {
+						Label {
+							VStack(alignment: .leading, spacing: 2) {
+								Text("Hands")
+								Text("Unfinished: a touch keyboard, XY pad and tilt that play the FM-1.").font(.caption).foregroundStyle(.secondary)
+							}
+						} icon: { Image(systemName: "hand.raised.fingers.spread") }
+					}
+					GarageBandRow()
+				} header: {
+					Text("Experimental")
+				} footer: {
+					Text("These are new and may change or misbehave.")
+				}
+				Section {
 					AppIconPicker().id("appIcon")
 					Picker("MIDI packets", selection: $app.packetAPI) {
 						Text("Universal (UMP)").tag(MIDIEngine.PacketAPI.universal)
 						Text("Legacy packet lists").tag(MIDIEngine.PacketAPI.legacy)
 					}
 					Button("Bluetooth MIDI…") { showBluetooth = true }
-					Button("About and licence") { showAbout = true }
+					Button("About, privacy and support") { showAbout = true }
 				} header: {
 					Text("Settings")
 				} footer: {
@@ -238,34 +248,4 @@ struct BluetoothMIDIView: UIViewControllerRepresentable {
 		return nav
 	}
 	func updateUIViewController(_ vc: UINavigationController, context: Context) {}
-}
-
-struct AboutView: View {
-	@Environment(\.dismiss) private var dismiss
-	var body: some View {
-		NavigationStack {
-			ScrollView {
-				VStack(alignment: .leading, spacing: 12) {
-					#if FM1_DOCK
-					Text("FM-1 Manager gives the FM-1's web installers what Safari on iOS lacks: Web MIDI, over CoreMIDI and USB. The Firmware Hub and fm1-dock's page run as they are; nothing is sent to the FM-1 unless a page sends it.")
-					Text("Licence").font(.headline)
-					Text("FM-1 Manager is free software under the GNU General Public License, version 3 only (GPL-3.0-only). It carries fm1-dock's installer (dock.js, install/fm1install.js, fm1ota.js, ports.js; by Joakim Eriksson, Leo Kuroshita / Hügelton Instruments and fm1-dock's contributors), unchanged, under that licence; the app is under it as a whole. Its source code is public, under the same licence, in the fm1-manager repository.")
-					#else
-					Text("FM-1 Manager gives the FM-1 Firmware Hub what Safari on iOS lacks: Web MIDI, over CoreMIDI and USB. The Hub's page runs as it is, loaded from thefirmwarehub.com; nothing is sent to the FM-1 unless the page sends it.")
-					Text("Licence").font(.headline)
-					Text("FM-1 Manager is free software under the GNU General Public License, version 3 only (GPL-3.0-only). Its source code is public, under the same licence, in the fm1-manager repository.")
-					#endif
-					Text("Installing firmware is at your own risk. An install cut off leaves the FM-1 in update mode: install the same firmware again to finish it. The FM-1's raw-USB rescue mode (OCT− held at power-on) needs a computer.")
-						.foregroundStyle(.secondary)
-					if let url = Bundle.main.url(forResource: "GPL-3.0", withExtension: "txt"),
-					   let text = try? String(contentsOf: url, encoding: .utf8) {
-						DisclosureGroup("GNU General Public License v3") { Text(text).font(.caption2.monospaced()) }
-					}
-				}
-				.padding()
-			}
-			.navigationTitle("About")
-			.toolbar { Button("Done") { dismiss() } }
-		}
-	}
 }

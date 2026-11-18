@@ -13,7 +13,7 @@ let package = Package(
 		.library(name: "FM1KitTestSupport", targets: ["FM1KitTestSupport"]),
 	],
 	targets: [
-		.target(name: "FM1Kit", resources: [.copy("Resources/webmidi.js")]),
+		.target(name: "FM1Kit", resources: [.copy("Resources/webmidi.js"), .process("Resources/PrivacyInfo.xcprivacy")]),
 		// A simulated FM-1 on virtual CoreMIDI endpoints of its own unique name, for the tests here and the app's.
 		.target(name: "FM1KitTestSupport", dependencies: ["FM1Kit"]),
 		.testTarget(name: "FM1KitTests", dependencies: ["FM1Kit", "FM1KitTestSupport"]),

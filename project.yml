@@ -55,7 +55,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.klhoud.fm1
         SWIFT_ACTIVE_COMPILATION_CONDITIONS: $(inherited) $(FM1_DOCK_SWIFT_$(FM1_DOCK))
         PRODUCT_NAME: FM1Dock
-        TARGETED_DEVICE_FAMILY: "1,2"
+        # iPhone only for 1.0: nobody has used it on an iPad yet (a device family can be added later, never removed)
+        TARGETED_DEVICE_FAMILY: "1"
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
@@ -76,11 +77,13 @@ targets:
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone: >-
           UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
-        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: >-
-          UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown
-          UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: >-
-          FM-1 Manager can connect to an FM-1 over Bluetooth MIDI when you pair it here. USB is what installs use.
+          FM-1 Manager uses Bluetooth only when you open Bluetooth MIDI in Settings, to pair an FM-1 or another
+          Bluetooth MIDI device. Installs use the USB cable.
+        # (CMMotionManager's device motion asks no permission; the string is there in case iOS ever does)
+        INFOPLIST_KEY_NSMotionUsageDescription: >-
+          Hands reads how the phone is tilted while you hold its tilt pad, and turns that into MIDI for the FM-1.
+          Nothing is recorded or sent anywhere else.
         # Info.plist goes through the C preprocessor: Debug alone may create virtual MIDI endpoints (the tests)
         INFOPLIST_PREPROCESS: YES
         FM1_DOCK_PLIST_YES: FM1_DOCK=1

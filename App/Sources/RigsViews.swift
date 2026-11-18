@@ -111,14 +111,22 @@ final class RigLinkHost {
 
 // MARK: home: the grid
 
-struct RigsSection: View {
+struct RigsRows: View {
 	@Environment(AppModel.self) private var app
 	@Binding var path: [Route]
 	@State private var editing: Rig?
 	@State private var capturing = false
 
+	/// The rows of Rigs, inside the home screen's Experimental section.
 	var body: some View {
-		Section {
+		Group {
+			Label {
+				VStack(alignment: .leading, spacing: 2) {
+					Text("Rigs")
+					Text("Sets of fm1-dock modules, put on the FM-1 in one go. Tested against a simulated FM-1 only: check “Save what's on my FM-1” first.")
+						.font(.caption).foregroundStyle(.secondary)
+				}
+			} icon: { Image(systemName: "square.stack") }
 			LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 10)], spacing: 10) {
 				ForEach(app.rigs.rigs) { rig in
 					Button { path.append(.rig(rig.id)) } label: { RigCard(rig: rig) }.buttonStyle(.plain)
@@ -133,10 +141,6 @@ struct RigsSection: View {
 			Button { capturing = true } label: { Label("Save what's on my FM-1 as a rig", systemImage: "square.and.arrow.down.on.square") }
 				.disabled(app.fm1 == nil)
 			NavigationLink(value: Route.catalogue) { Label("Get modules from fm1-dock's catalogue", systemImage: "arrow.down.circle") }
-		} header: {
-			Text("Rigs")
-		} footer: {
-			Text("A rig is a set of fm1-dock modules kept on the phone and put on the FM-1 in one go: only what differs is removed or added.")
 		}
 		.sheet(item: $editing) { RigEditor(rig: $0) }
 		.sheet(isPresented: $capturing) { CaptureView() }
@@ -434,6 +438,7 @@ struct ApplyView: View {
 					}
 				}
 				.interactiveDismissDisabled({ if case .running = phase { true } else { false } }())
+				.warnsAboutWrites()
 				.task { await read() }
 				.onDisappear { RigLinkHost.close(link); UIApplication.shared.isIdleTimerDisabled = false }
 		}

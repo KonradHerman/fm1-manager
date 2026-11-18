@@ -25,6 +25,8 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 	private(set) var canGoBack = false
 	private(set) var isLoading = false
 	private(set) var loadError: String?
+	/// A page has loaded at least once (before that, a failed load leaves nothing but a blank view).
+	private(set) var hasLoaded = false
 	/// An install (or another SysEx exchange) is running: the screen stays on, leaving asks first.
 	private(set) var busy = false
 	/// The page itself says an install runs (beforeunload would ask, or data-busy): links wait then.
@@ -131,6 +133,7 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 	}
 
 	func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) { loadError = nil }
+	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { hasLoaded = true }
 
 	func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
 		failed(error)
