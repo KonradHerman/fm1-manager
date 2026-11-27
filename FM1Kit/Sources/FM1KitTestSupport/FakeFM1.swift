@@ -70,7 +70,15 @@ public final class FakeFM1: @unchecked Sendable {
 		self.identity = identity; self.dockVersion = dockVersion; self.imageLength = imageLength; self.product = product
 		self.sourceAPI = sourceAPI; self.destinationAPI = destinationAPI; self.token = token
 		_written = [UInt8](repeating: 0, count: imageLength)
-		let st = MIDIClientCreateWithBlock("FakeFM1 \(token)" as CFString, &client, nil)
+		// (CoreMIDI's server can be briefly unavailable between test suites, above all on CI runners, where
+		// MIDIClientCreate has failed with -2 and -304: a few tries before giving up)
+		var st = MIDIClientCreateWithBlock("FakeFM1 \(token)" as CFString, &client, nil)
+		var tries = 0
+		while st != noErr && tries < 10 {
+			Thread.sleep(forTimeInterval: 0.5)
+			tries += 1
+			st = MIDIClientCreateWithBlock("FakeFM1 \(token)" as CFString, &client, nil)
+		}
 		guard st == noErr else { throw MIDIEngineError.coreMIDI("MIDIClientCreate", st) }
 		try plugIn(name: self.name(for: identity))
 		bootLog()
