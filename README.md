@@ -9,14 +9,15 @@
   Free, open source and unofficial. It collects nothing.
 </p>
 
-<!-- When TestFlight or the App Store has it, this line becomes the link to it. -->
+<!-- The way to get it. When the App Store has it, that link joins this line. -->
 <h3 align="center">
-  <a href="#install-it-now">Install it now: build it with Xcode in five steps</a>
+  <a href="https://testflight.apple.com/join/dTG384hC">Get FM-1 Manager on TestFlight</a>
 </h3>
 
 <p align="center">
   iPhone · iOS 17 or later · a USB data cable to the FM-1 (USB-C, or Apple's camera adapter on a Lightning iPhone)<br>
-  TestFlight and the App Store are on the way; this page will link them when they are real.<br>
+  The TestFlight link opens once Apple has approved the first public build (submitted 27 November 2026).<br>
+  Until then, or if you'd rather: <a href="#install-it-now">build it with Xcode in five steps</a>. The App Store comes later.<br>
   <a href="SUPPORT.md">Help and recovery</a> · <a href="PRIVACY.md">Privacy</a> · <a href="CHANGELOG.md">What's new</a> · <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
@@ -122,7 +123,7 @@ This app is a thin layer over other people's work, and it would be nothing witho
 
 ## Install it now
 
-Today the only way onto your phone is to build it. It takes about ten minutes the first time.
+Until the [TestFlight link](https://testflight.apple.com/join/dTG384hC) is approved, the way onto your phone is to build it. It takes about ten minutes the first time, and it stays the way to run your own changes.
 
 1. A Mac with **Xcode 26** (from the App Store) and **[XcodeGen](https://github.com/yonaskolb/XcodeGen)**:
    `brew install xcodegen`.
