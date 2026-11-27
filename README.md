@@ -36,7 +36,7 @@
 
 ## Web MIDI, where Safari has none.
 
-The FM-1's installers are web pages that need Web MIDI, which no iPhone browser has. FM-1 Manager opens them as they
+The FM-1's installers are web pages that need Web MIDI, which Safari on the iPhone does not have. FM-1 Manager opens them as they
 are and connects them to your FM-1 over the cable: the FM-1 Firmware Hub, fm1-dock's page and Baud Girl's installer.
 
 <img src="assets/readme/2-firmware-hub.jpg" width="300" alt="The FM-1 Firmware Hub open in the app, connected: its Connect FM-1 button says the FM-1 runs fm1-dock 0.9.0.">
