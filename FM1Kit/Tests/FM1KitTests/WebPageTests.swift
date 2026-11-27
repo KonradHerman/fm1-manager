@@ -115,6 +115,11 @@ final class WebMIDIShimTests: XCTestCase {
 		XCTAssertEqual(v5, "InvalidStateError")
 		let v6 = try await h.js("return T.a.inputs.size") as? Int
 		XCTAssertEqual(v6, 1)
+		// back under new ids (a virtual endpoint always is): the dead ports of its name give way to the new ones
+		try f.replug()
+		try await h.waitFor("[...T.a.inputs.values()].some((p) => p.state === 'connected')", timeout: 5)
+		let names = try await h.js("return [[...T.a.inputs.values()].map((p) => p.name + ':' + p.state), [...T.a.outputs.values()].map((p) => p.name + ':' + p.state)]") as? [[String]]
+		XCTAssertEqual(names, [["\(f.portName):connected"], ["\(f.portName):connected"]])
 		let states0 = try await h.js("return T.states")
 		let states = try XCTUnwrap(states0 as? [[Any]])
 		XCTAssertTrue(states.contains { $0[0] as? String == "input" && $0[1] as? String == "disconnected" && $0[3] as? Bool == true }, "\(states)")
@@ -138,6 +143,19 @@ final class WebMIDIShimTests: XCTestCase {
 		try await h.waitFor("window.got.length >= 2", timeout: 5)
 		let got = try await h.js("return window.got") as? [[Int]]
 		XCTAssertEqual(got, [[0xF0, 1, 2, 0xF7], [0x90, 60, 1]])
+	}
+
+	/// A hidden about:blank frame of the page's own (Baud Girl's "fresh look") gets the same, live MIDIAccess.
+	func testASameOriginFrameGetsTheSameAccess() async throws {
+		let f = try FakeFM1()
+		let page = "<!doctype html><body><script>window.go = async (n) => { const a = await navigator.requestMIDIAccess({ sysex: true }); const fr = document.createElement('iframe'); fr.hidden = true; document.body.append(fr); const b = await fr.contentWindow.navigator.requestMIDIAccess({ sysex: true }); return [a === b, [...b.inputs.values()].some((p) => p.name === n)]; }</script>"
+		let h = try WebHarness(filter: f.filter, resolver: { _ in (Data(page.utf8), "text/html") })
+		defer { h.close() }
+		try await h.load(URL(string: "fm1dock://app/index.html")!)
+		let end = Date().addingTimeInterval(5)
+		while h.engine.endpoints.count < 2 && Date() < end { try await Task.sleep(nanoseconds: 20_000_000) }
+		let r = try await h.js("return await go(n)", ["n": f.portName]) as? [Bool]
+		XCTAssertEqual(r, [true, true])
 	}
 
 	func testOnMainFromAnyThread() async {
@@ -228,6 +246,41 @@ final class LiveSiteTests: XCTestCase {
 		let shown = try await h.js("return document.body.innerText") as? String ?? ""
 		XCTAssertFalse(shown.contains("doesn't work on iPhone"), "the hub's iOS notice is shown")
 		XCTAssertFalse(shown.contains("No FM-1 found"))
+	}
+
+	/// The case seen on a real FM-1 (Skiff 2.7 from the Hub, the loader gone 27 requests into its write), replayed on
+	/// the live Hub against the simulated FM-1: running fm1-dock (FM-1_921), its loader Skiff's own (ota-FM-1_727),
+	/// which drops its USB 27 requests into the write and comes back. Records what the Hub says the first time and
+	/// on Install again. Only the fake is ever written to (and the fake's write is cut short by design).
+	func testFirmwareHubWhenTheLoaderVanishesMidWrite() async throws {
+		let f = try FakeFM1(identity: "FM-1_921", dockVersion: "0.9", imageLength: 0x10000, product: "FM-1_727")
+		f.loaderVersion = "727"
+		f.dropLoaderAfter = 27
+		let h = try WebHarness(filter: f.filter, allowedOrigins: ["https://thefirmwarehub.com"], userAgent: Self.iPhoneUA)
+		defer { h.close() }
+		do { try await h.load(URL(string: "https://thefirmwarehub.com/")!, timeout: 40) } catch { throw XCTSkip("no network: \(error)") }
+		let card = ".fw[data-id=\"skiff\"]"
+		try await h.waitFor("!!document.querySelector('\(card) button.go')", timeout: 20)
+		func attempt() async throws -> String {
+			try await h.js("document.querySelector('\(card) button.go').click()")
+			do { try await h.waitFor("(() => { const d = document.getElementById('askdlg'); return !!(d && d.open) })()", timeout: 30) } catch {
+				XCTFail("no install question; the card says: \((try? await h.text("\(card) .msg")) ?? "?"); device: \(f.events.suffix(4))")
+				throw error
+			}
+			try await h.js("document.querySelector('#askdlg .yes').click()")
+			try await h.waitFor("(() => { const m = document.querySelector('\(card) .msg').textContent; return /:/.test(m) && !/Writing|Looking|Loading|starts|reads/.test(m) && !document.querySelector('\(card) button.go').disabled })()",
+			                    timeout: 150, poll: 500_000_000)
+			return try await h.text("\(card) .msg")
+		}
+		let first = try await attempt()
+		let busyAfter = await h.bridge.pageIsBusy()
+		try await Task.sleep(nanoseconds: 3_000_000_000)                  // (the loader is back)
+		let second = try await attempt()
+		print("The Hub, the loader gone mid-write:\n first: \(first)\n busy after: \(busyAfter)\n Install again: \(second)\n device: \(f.events.suffix(8).joined(separator: " | "))")
+		XCTAssertTrue(first.hasPrefix("lost:"), first)
+		XCTAssertFalse(busyAfter, "the Hub's page is not busy after the failure")
+		XCTAssertTrue(second.hasPrefix("foreign:"), "the Hub does not resume another firmware's loader: \(second)")
+		XCTAssertEqual(f.received.filter { $0 == FM1Protocol.upgrade }.count, 2, "nothing more was written on Install again")
 	}
 
 	func testDockSiteConsoleConnectsWithAnIPhoneUserAgent() async throws {

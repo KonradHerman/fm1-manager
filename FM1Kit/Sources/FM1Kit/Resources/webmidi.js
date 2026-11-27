@@ -129,6 +129,10 @@
       let port = map.get(p.id);
       if (!port) {
         port = p.kind === "input" ? new MIDIInput(p, "input") : new MIDIOutput(p, "output");
+        // A device that comes back under a new id (CoreMIDI gave its endpoints new ones) replaces the disconnected
+        // port of its name: Chrome reuses the port when the id is the same, and pages that pair an input with "the"
+        // output of its name (the Firmware Hub's) would otherwise pick the dead one and find no FM-1.
+        for (const [k, old] of [...map]) if (S.get(old).state === "disconnected" && old.name === p.name) map.delete(k);
         mapSet.call(map, p.id, port);
         if (access) statechange(port);
         continue;
@@ -185,6 +189,25 @@
     configurable: true, enumerable: true, writable: true,
     value: { requestMIDIAccess(options) { return requestMIDIAccess(options); } }.requestMIDIAccess,
   });
+  // A frame of the page's own origin (Baud Girl's installer takes "a fresh look" at the MIDI devices through a hidden
+  // about:blank frame's navigator): its navigator gets the same requestMIDIAccess, which answers the same, live
+  // MIDIAccess. Frames of other origins are left alone (their document cannot even be read from here).
+  const frameWindow = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, "contentWindow");
+  if (frameWindow && frameWindow.get) {
+    Object.defineProperty(HTMLIFrameElement.prototype, "contentWindow", {
+      configurable: true, enumerable: frameWindow.enumerable,
+      get() {
+        const w = frameWindow.get.call(this);
+        try {
+          if (w && w !== window && w.document && w.Navigator && !w.Navigator.prototype.requestMIDIAccess)
+            Object.defineProperty(w.Navigator.prototype, "requestMIDIAccess", {
+              configurable: true, enumerable: true, writable: true, value: navigator.requestMIDIAccess });
+        } catch (_) { /* another origin's frame */ }
+        return w;
+      },
+    });
+  }
+
   for (const [k, v] of Object.entries({ MIDIAccess, MIDIPort, MIDIInput, MIDIOutput, MIDIInputMap, MIDIOutputMap,
     MIDIMessageEvent, MIDIConnectionEvent }))
     Object.defineProperty(window, k, { configurable: true, writable: true, value: v });

@@ -17,6 +17,16 @@ public final class FakeFM1: @unchecked Sendable {
 	public let destinationAPI: EndpointAPI
 	/// What the device writes to the page is cut into packets of this many bytes (0: one packet per message).
 	public var chunkSize: Int { get { locked { _chunkSize } } set { locked { _chunkSize = newValue } } }
+	/// The loader's identity number after the running firmware stages it ("900": ota-FM-1_900, Felucca's and
+	/// fm1-dock's; another firmware's own copy has its own, as Skiff 2.7's ota-FM-1_727).
+	public var loaderVersion: String { get { locked { _loaderVersion } } set { locked { _loaderVersion = newValue } } }
+	/// The loader fails this many requests into its write pass: its USB goes away (as a loader that restarts after a
+	/// flash error does) and comes back after `dropFor` seconds as the same loader, waiting for UPDATE again. Once.
+	public var dropLoaderAfter: Int? { get { locked { _dropLoaderAfter } } set { locked { _dropLoaderAfter = newValue } } }
+	public var dropFor: TimeInterval = 1.5
+	private var _loaderVersion = "900"
+	private var _dropLoaderAfter: Int?
+	private var writeServed = 0
 
 	private var client = MIDIClientRef()
 	private var source = MIDIEndpointRef()
@@ -256,8 +266,9 @@ public final class FakeFM1: @unchecked Sendable {
 
 	private func rx(_ d: [UInt8]) {
 		if d == FM1Protocol.handshakeQuery {
-			let t = Array(identity.utf8.prefix(27))
-			tx([0xF0] + FM1Protocol.pack7([0, 0x59, 0x11, 0, 0, 0] + t + [UInt8](repeating: 0, count: 28 - t.count)) + [0xF7])
+			// (ota.c ota_send_msg: 0, 0x59, cmd, the body's length, 0, 0, the body, ~sum of the body)
+			let t = Array(identity.utf8.prefix(27)), body = t + [UInt8](repeating: 0, count: 27 - t.count)
+			tx([0xF0] + FM1Protocol.pack7([0, 0x59, 0x11, 27, 0, 0] + body + [~body.reduce(0, &+)]) + [0xF7])
 		} else if d == FM1Protocol.upgrade {
 			upgrade()
 		} else if d.count > 4, d[0] == 0xF0, Array(d[1...3]) == FM1Protocol.dockManufacturer {
@@ -272,6 +283,7 @@ public final class FakeFM1: @unchecked Sendable {
 	private func upgrade() {
 		let ota = identity.hasPrefix("ota-")
 		note("UPGRADE (\(ota ? "loader: the whole image" : "running: stage the loader"))")
+		writeServed = 0
 		if ota {
 			queueOTA = stride(from: 0, to: imageLength, by: 512).map { (UInt32($0), min(512, imageLength - $0)) } + [(0xF000_0000, 8)]
 		} else {
@@ -284,7 +296,7 @@ public final class FakeFM1: @unchecked Sendable {
 		guard !queueOTA.isEmpty else { return }
 		let r = queueOTA.removeFirst()
 		waiting = r
-		var u: [UInt8] = [0, 0x59, 0x30, 0, 0, 0, 0] + FM1Protocol.le32(r.addr) + [UInt8(r.len & 0xFF), UInt8(r.len >> 8), 0]
+		var u: [UInt8] = [0, 0x59, 0x30, 8, 0, 0, 0] + FM1Protocol.le32(r.addr) + [UInt8(r.len & 0xFF), UInt8(r.len >> 8), 0]
 		let s = u[6..<14].reduce(0) { $0 + Int($1) }
 		u.append(UInt8(~s & 0xFF))
 		tx([0xF0] + FM1Protocol.pack7(u) + [0xF7])
@@ -296,7 +308,8 @@ public final class FakeFM1: @unchecked Sendable {
 		waiting = nil
 		let model = identity.replacingOccurrences(of: "ota-", with: "").components(separatedBy: "_")[0]
 		if w.addr == 0xE000_0000 {
-			later(400) { [self] in reboot(as: "ota-\(model)_900", dock: nil) }
+			let v = loaderVersion
+			later(400) { [self] in reboot(as: "ota-\(model)_\(v)", dock: nil) }
 		} else if w.addr == 0xF000_0000 {
 			note("image written")
 			later(600) { [self] in reboot(as: product, dock: "0.7") }
@@ -304,6 +317,16 @@ public final class FakeFM1: @unchecked Sendable {
 			let data = Array(u[14..<min(u.count - 1, 14 + w.len)])
 			if identity.hasPrefix("ota-") {
 				locked { for (i, b) in data.enumerated() where Int(w.addr) + i < _written.count { _written[Int(w.addr) + i] = b } }
+				writeServed += 1
+				if let n = dropLoaderAfter, writeServed >= n {
+					dropLoaderAfter = nil
+					note("loader dropped its USB after \(writeServed) requests of the write")
+					unplug()
+					queueOTA = []; waiting = nil; writeServed = 0
+					locked { parser.reset() }
+					later(Int(dropFor * 1000)) { [self] in try? plugIn(name: name(for: identity)); note("loader back") }
+					return
+				}
 			}
 			next()
 		}
