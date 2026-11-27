@@ -18,7 +18,7 @@ Install firmware and fm1-dock modules on your M-VAVE FM-1 from your iPhone, over
 
 FM-1 Manager installs firmware and modules on the M-VAVE FM-1 synthesizer from your iPhone.
 
-The FM-1's community installers are web pages that talk to the synth over Web MIDI, which Safari on the iPhone does not have. FM-1 Manager opens those pages, the FM-1 Firmware Hub and fm1-dock's page, unchanged, and connects them to your FM-1 over a USB cable. Everything they can do on a computer with Chrome, they can do here: choose a firmware and install it, install fm1-dock, add and remove its modules.
+The FM-1's community installers are web pages that talk to the synth over Web MIDI, which Safari on the iPhone does not have. FM-1 Manager opens those pages, the FM-1 Firmware Hub and fm1-dock's page, unchanged, and connects them to your FM-1 over a USB cable. Everything they can do on a computer with Chrome, they can do here: choose a firmware and install it, install fm1-dock, add and remove its modules. It also opens the installer of Baud Girl (FM-1+VA), a firmware that is not open source, from its maker's own site.
 
 What you need: an M-VAVE FM-1 and a USB cable that carries data (USB-C to USB-C on a USB-C iPhone; on a Lightning iPhone, Apple's Lightning to USB 3 Camera Adapter with power).
 
@@ -30,9 +30,9 @@ Experimental (new, and may change or misbehave):
 • Rigs: save the set of fm1-dock modules on your FM-1, keep several sets on the phone, and put one back on in one go. Only what differs is removed or added, and the FM-1 is checked after every step.
 • Hands: an unfinished touch keyboard, XY pad and tilt control that play the FM-1.
 
-Please read before you install anything: this app writes firmware and modules to your synth. A cut cable or a bug can leave the FM-1 in update mode; that is usually fixed by installing the same firmware again, and the support page lists the recovery steps, some of which need a computer. You use it at your own risk.
+Please read before you install anything: this app writes firmware and modules to your synth. An install that stops can leave the FM-1 in update mode; the app recognises that and says what to do. Often installing the same firmware again finishes it, but not always: the support page lists the recovery steps, some of which need a computer. You use it at your own risk.
 
-FM-1 Manager is unofficial: it is not made by, affiliated with or endorsed by M-VAVE, the FM-1 Firmware Hub or fm1-dock. It is open source under the GPL-3.0 licence, and it collects no data: no account, no analytics, no tracking.
+FM-1 Manager is unofficial: it is not made by, affiliated with or endorsed by M-VAVE, the FM-1 Firmware Hub, fm1-dock or Baud Girl. It is open source under the GPL-3.0 licence, and it collects no data: no account, no analytics, no tracking.
 
 ## Keywords (100)
 
@@ -58,7 +58,7 @@ First release: the FM-1 Firmware Hub and fm1-dock's page with Web MIDI over USB,
 Every content question (violence, sexual content, profanity, drugs, gambling, horror, medical, contests and so on): **None**.
 
 - **Unrestricted web access: No.** The app shows web pages only from an allow-list (thefirmwarehub.com,
-  fm1.designburgapps.com, joakimeriksson.github.io, and its own built-in pages; `Site.opensInApp` in
+  fm1.designburgapps.com, joakimeriksson.github.io, baudgirl.com, and its own built-in pages; `Site.opensInApp` in
   App/Sources/AppModel.swift). There is no address bar; any other link, including links inside those sites, opens in
   Safari, outside the app. Note for the owner: the allowed sites are third-party and could change their content; if
   Apple sees it differently, answering Yes only raises the rating to 17+.
@@ -75,7 +75,8 @@ Reasoning:
 - Its own network requests (the module catalogue) only download public files; nothing about the user is sent.
 - Library files, rigs and settings stay on the device (see PRIVACY.md).
 - Tracking: No (the privacy manifest declares NSPrivacyTracking false and no tracking domains).
-- The two installer sites are third-party websites shown in a web view; what they collect follows their own
+- The installer sites (the Firmware Hub, fm1-dock's page, Baud Girl's installer) are third-party websites shown in a
+  web view; what they collect follows their own
   policies, and the developer receives none of it. Note for the owner: the Firmware Hub page includes its own
   statistics script (Matomo-style `_paq`) and optional sign-in. Apple's definition counts data collected by
   "third-party partners whose code you integrate"; a third-party website you display is usually not that, but this is
@@ -88,13 +89,13 @@ class-compliant USB MIDI device (USB-C cable, or Apple's camera adapter on Light
 open source (GPL-3.0): https://github.com/KonradHerman/fm1-manager. No account or sign-in is needed.
 
 Its main purpose: the FM-1's firmware installers are web pages that need Web MIDI, which iOS browsers lack. The app
-shows two of them (thefirmwarehub.com and joakimeriksson.github.io/fm1-dock) and gives them Web MIDI through
-CoreMIDI. It shows only those sites; other links open in Safari.
+shows three of them (thefirmwarehub.com, joakimeriksson.github.io/fm1-dock and baudgirl.com's installer for its
+FM-1+VA firmware) and gives them Web MIDI through CoreMIDI. It shows only those sites; other links open in Safari.
 
 Without an FM-1 you can:
 - see the home screen, which says "No FM-1 connected" and explains how to connect one;
-- open both installer sites; they load and their own Connect buttons report that no FM-1 was found (the first time,
-  the app shows a one-time warning that it writes to the synth);
+- open the three installer sites; they load and their own Connect buttons report that no FM-1 was found (the first
+  time, the app shows a one-time warning that it writes to the synth);
 - open "Install from Library" and the Library, and import a file with the + button (any .dock or .fwsc file);
 - in the Experimental section: create and edit a rig, and download a module from fm1-dock's public catalogue
   ("Get modules from fm1-dock's catalogue"); applying a rig and "Save what's on my FM-1" need an FM-1 and are

@@ -11,6 +11,7 @@ The app's own code makes no network connection except these, and only when you u
 - **The FM-1 Firmware Hub** (`thefirmwarehub.com`; `fm1.designburgapps.com` redirects there), when you open it from
   the home screen.
 - **fm1-dock's page** (`joakimeriksson.github.io/fm1-dock`), when you open it from the home screen.
+- **Baud Girl's installer** (`baudgirl.com`), when you open "Baud Girl (FM-1+VA)" from the home screen.
 - **fm1-dock's module catalogue** (`joakimeriksson.github.io/fm1-dock/fw/index.json` and the module files next to
   it), only when you open "Get modules from fm1-dock's catalogue" and when you tap Get on a module.
 
@@ -19,12 +20,14 @@ App Store, outside the app.
 
 ### The websites are third-party sites
 
-The two installer sites are run by other people, not by this app's developer. The app shows them as they are, the
+The installer sites are run by other people, not by this app's developer. The app shows them as they are, the
 way Safari would, and adds only a way for them to talk MIDI to your FM-1 over the USB cable. What those sites load,
-count or store (for example their own statistics, or the Firmware Hub's own sign-in and favourites if you use them)
+count or store (for example their own statistics, Baud Girl's installer's own reports of how an install went, or the
+Firmware Hub's own sign-in and favourites if you use them)
 is up to them and follows their own privacy practices. The app does not read or receive anything from them except
 the MIDI messages they send to your FM-1. Cookies and site storage they set stay in the app on your phone, as they
-would in Safari.
+would in Safari. A file such a page saves (Baud Girl's installer saves a backup of your presets) goes into your
+library on the phone.
 
 ## What stays on your phone
 

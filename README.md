@@ -25,7 +25,8 @@ FM-1** (`FakeFM1`, see below) on virtual CoreMIDI endpoints, on a Mac and in the
 
 | Feature | What it is | Tested |
 | --- | --- | --- |
-| **FM-1 Firmware Hub** | thefirmwarehub.com, unchanged, with Web MIDI supplied by the app: install whole firmwares | The owner reports it working on the one iPhone and FM-1 above; which installs were run there was not recorded. Automated: connects to the simulated FM-1 with an iPhone user agent. |
+| **FM-1 Firmware Hub** | thefirmwarehub.com, unchanged, with Web MIDI supplied by the app: install whole firmwares | The owner reports it working on the one iPhone and FM-1 above. One whole-firmware install has been tried from the phone: Skiff 2.7, on that newer-chip FM-1, from fm1-dock 0.9.0. It **failed in the firmware's update loader** (early in its write); resumed from a Mac with the reference installer, it failed the same way; the FM-1 was recovered with M-Flasher. The cause is not established. Automated: connects to the simulated FM-1; with a simulated loader that drops out mid-write, the Hub reports "lost" and, on Install again, refuses to resume another firmware's loader ("foreign"). |
+| **Baud Girl (FM-1+VA)** | baudgirl.com's own installer for its firmware, which is not open source and not part of this app; the app only gives the page Web MIDI | Not tried on hardware. Automated (live page, simulated FM-1): it finds the FM-1 and gets as far as offering the install; the install itself was never run. |
 | **fm1-dock's page** | joakimeriksson.github.io/fm1-dock, unchanged: install fm1-dock, add and remove its modules, its console | The owner reports it working on the one iPhone and FM-1 above; which operations were run there was not recorded. Automated: its console and device panel connect to the simulated FM-1, and a module goes in through its file input. |
 | **Library** | .fwsc and .dock files kept in the app (visible in Files as On My iPhone › FM-1 Manager); import from Files, Safari, Mail; hand a file to a page's file input | Simulated FM-1 and simulator only. |
 | **Install from Library** | an offline page that installs a library file with fm1-dock's own installer code | Simulated FM-1 only, including a whole 610 KiB firmware install (both update stages, every byte checked). Not yet on hardware. |
@@ -160,13 +161,19 @@ repository.
 
 Pull requests are welcome. What would help most:
 
+- **Whole-firmware installs from a phone**: which firmwares, on which flash chip, from which firmware, and what the
+  installer page said if it failed.
 - **Testing on other hardware**: FM-1 units with the older flash chip, iPads, iPhones with Lightning (through Apple's
   USB 3 camera adapter), and firmwares other than fm1-dock. Say what worked and what did not.
 - **Rigs on a real FM-1**: the first check is "Save what's on my FM-1", which shows the FM-1's free space and largest
   gap next to the app's model of them. If those two ever disagree, that is a bug worth reporting.
 - **Hands on a real FM-1**: latency, stuck notes, how tilt feels.
 
-Known rough edges:
+Known issues and rough edges:
+
+- **Whole-firmware installs**: the one tried from a phone failed in the firmware's own update loader and needed
+  M-Flasher on a computer to recover (see the Firmware Hub row above and [SUPPORT.md](SUPPORT.md)). The app now
+  recognises update mode and says what to do, but it cannot finish an install the loader itself abandons.
 
 - Updating a module to another version, or moving one to make room, removes it first. That briefly frees its
   settings and preset slots for other modules.

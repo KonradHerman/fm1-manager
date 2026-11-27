@@ -21,12 +21,12 @@ struct AboutView: View {
 			List {
 				Section {
 					LabeledContent("Version", value: Links.version)
-					Text("Unofficial: not affiliated with M-VAVE, the FM-1 Firmware Hub or fm1-dock.")
+					Text("Unofficial: not affiliated with M-VAVE, the FM-1 Firmware Hub, fm1-dock or Baud Girl.")
 					#if FM1_DOCK
-					Text("FM-1 Manager gives the FM-1's web installers what Safari on iOS lacks: Web MIDI, over CoreMIDI and USB. The Firmware Hub and fm1-dock's page run as they are; nothing is sent to the FM-1 unless a page, or a rig you apply, sends it.")
+					Text("FM-1 Manager gives the FM-1's web installers what Safari on iOS lacks: Web MIDI, over CoreMIDI and USB. The Firmware Hub, fm1-dock's page and Baud Girl's installer run as they are, from their own sites; Baud Girl (FM-1+VA) is not open source and nothing of it is in this app. Nothing is sent to the FM-1 unless a page, or a rig you apply, sends it.")
 						.font(.footnote).foregroundStyle(.secondary)
 					#else
-					Text("FM-1 Manager gives the FM-1 Firmware Hub what Safari on iOS lacks: Web MIDI, over CoreMIDI and USB. The Hub's page runs as it is; nothing is sent to the FM-1 unless the page sends it.")
+					Text("FM-1 Manager gives the FM-1 Firmware Hub and Baud Girl's installer what Safari on iOS lacks: Web MIDI, over CoreMIDI and USB. They run as they are, from their own sites; Baud Girl (FM-1+VA) is not open source and nothing of it is in this app. Nothing is sent to the FM-1 unless a page sends it.")
 						.font(.footnote).foregroundStyle(.secondary)
 					#endif
 				}
