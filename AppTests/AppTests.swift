@@ -50,6 +50,24 @@ final class SiteTests: XCTestCase {
 		#endif
 	}
 
+	func testKnownProblemsAreBundledAndRead() {
+		let p = KnownProblem.load()
+		XCTAssertEqual(p.map(\.id), ["skiff-2.7-newer-chip-update-loader"])
+		XCTAssertEqual(p.first?.chip, .newer)
+		XCTAssertTrue(p.first?.recovery.contains("M-Flasher") == true)
+	}
+
+	func testTheChipIsRememberedAndTheBaudGirlRowStays() {
+		let model = AppModel()
+		let before = model.chip
+		defer { model.chip = before }
+		model.chip = ChipKnowledge()
+		model.chip.say(.newer)
+		XCTAssertEqual(ChipKnowledge.load().chip, .newer)
+		XCTAssertEqual(HubFilter.mode(ChipKnowledge.load()), .filtered)
+		XCTAssertEqual(InstallerVisibility.of(support: .unknown, chip: model.chip.chip), .shown(note: "newer-chip support unknown"))
+	}
+
 	func testUpdateModeIsToldByThePortName() {
 		for n in ["Felucca Update", "JIANT Update", "FM-1 Update", "OTA", "ota", "FM-1 Update Test 1A2B3C4D"] {
 			XCTAssertTrue(AppModel.isUpdateLoader(n), n)

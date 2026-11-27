@@ -50,6 +50,13 @@ struct BrowserView: View {
 	@State private var page: WebPage?
 	@State private var confirmLeave: (() -> Void)?
 	@State private var showFiles = false
+	@State private var hubShownAll = false
+	@State private var askChip = false
+	@AppStorage("chip.asked") private var chipAsked = false
+	/// The app turned the Hub's own filter on (so it may turn it off again when it is no longer wanted).
+	@AppStorage("hub.filterSetByApp") private var hubFilterSetByApp = false
+
+	private var isHub: Bool { site.id == Site.hub.id }
 
 	var body: some View {
 		Group {
@@ -64,8 +71,22 @@ struct BrowserView: View {
 		.navigationBarBackButtonHidden(true)
 		.warnsAboutWrites()
 		.onAppear {
-			if page == nil, let engine = app.engine { page = WebPage(site: site, engine: engine, library: app.library.folder) }
+			if page == nil, let engine = app.engine {
+				let mode = HubFilter.mode(app.chip)
+				let p = WebPage(site: site, engine: engine, library: app.library.folder,
+				                url: isHub ? HubFilter.startURL(site.url, mode) : site.url)
+				if isHub {
+					if mode == .filtered { hubFilterSetByApp = true }
+					// the Hub keeps a filter in its own storage: one the app set, no longer wanted, is turned off again
+					else if hubFilterSetByApp {
+						p.afterFirstLoad = { page in Task { if await page.run(HubFilter.turnOffJS) != nil { hubFilterSetByApp = false } } }
+					}
+				}
+				page = p
+			}
+			if (isHub || site.id == Site.baudGirl.id) && app.chip.shouldAsk && !chipAsked { chipAsked = true; askChip = true }
 		}
+		.sheet(isPresented: $askChip) { ChipQuestion() }
 	}
 
 	@ViewBuilder
@@ -87,6 +108,10 @@ struct BrowserView: View {
 			.ignoresSafeArea(edges: .bottom)
 			.safeAreaInset(edge: .top, spacing: 0) {
 				VStack(spacing: 0) {
+					if isHub {
+						HubChipBar(mode: HubFilter.mode(app.chip), showAll: { Task { _ = await page.run(HubFilter.turnOffJS) } },
+						           shownAll: $hubShownAll)
+					}
 					if app.fm1 == nil && !page.busy { NoDeviceBanner() }
 					// the FM-1 in its update loader once the page's own install has stopped (during an install it
 					// passes through update mode on purpose; the page says busy then)

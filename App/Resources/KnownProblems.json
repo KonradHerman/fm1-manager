@@ -1,0 +1,19 @@
+{
+  "format": "fm1-manager-known-problems",
+  "version": 1,
+  "problems": [
+    {
+      "id": "skiff-2.7-newer-chip-update-loader",
+      "firmware": "Skiff",
+      "firmwareVersion": "2.7",
+      "source": "FM-1 Firmware Hub",
+      "chip": "newer",
+      "from": "fm1-dock 0.9.0",
+      "date": "2026-11",
+      "summary": "Installing it stopped in its update loader at the first write and left the FM-1 in update mode.",
+      "details": "Installed from the FM-1 Firmware Hub in FM-1 Manager on an iPhone, on an FM-1 with the newer flash chip (B36014) running fm1-dock 0.9.0. The update loader was staged and ran, read the package, and its USB went away at the start of its write; the FM-1 stayed in update mode (ota-FM-1_727). Resuming from a Mac with fm1-dock's reference installer stopped the same way. The firmware itself runs once written another way.",
+      "recovery": "Written with M-Flasher on a computer, through the chip's own download mode.",
+      "seen": "first-hand, one FM-1"
+    }
+  ]
+}

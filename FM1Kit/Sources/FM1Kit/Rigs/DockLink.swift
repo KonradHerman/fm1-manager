@@ -93,7 +93,7 @@ public final class WebDockLink: NSObject, DockLink, WKNavigationDelegate {
 		return DockDeviceState(identity: identity, dockVersion: info?["version"] as? String, board: smk ? .smk37 : .fm1,
 		                       abi: UInt32(n(hello, "abi")), free: n(hello, "free"), largest: n(hello, "largest"),
 		                       maxFile: n(hello, "maxFile"), receiving: n(hello, "receiving") != 0, current: n(hello, "cur"),
-		                       modules: modules)
+		                       modules: modules, flashID: info?["flashId"] as? String)
 	}
 
 	public func deploy(_ file: Data, progress: @escaping @MainActor (Double) -> Void) async throws {
@@ -117,6 +117,12 @@ public final class WebDockLink: NSObject, DockLink, WKNavigationDelegate {
 	public func delete(_ name: String) async throws { try status(try await call("return await R.remove(n)", ["n": name]), "Removing \(name)") }
 	public func select(_ name: String) async throws { try status(try await call("return await R.select(n)", ["n": name]), "Selecting \(name)") }
 	public func abort() async throws { _ = try await call("return await R.abort()") }
+
+	/// The flash chip's JEDEC id from fm1-dock's INFO (HELLO, then INFO: both read only); nil when no FM-1 running
+	/// fm1-dock 0.8 or later answers.
+	public func readFlashID() async throws -> String? {
+		try await call("return await R.flash()") as? String
+	}
 
 	public func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { loaded = true }
 	public func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { loadError = error }

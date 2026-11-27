@@ -34,7 +34,8 @@ library on the phone.
 - **Your library**: the firmware (.fwsc) and module (.dock) files you add. They are in the app's Documents folder,
   visible in the Files app as On My iPhone › FM-1 Manager, and included in your iPhone backups.
 - **Your rigs**: one small file each in the Rigs folder of the same Documents folder.
-- **Settings**: the app's own settings (the MIDI API choice, Hands' settings, whether you have
+- **Settings**: the app's own settings (the MIDI API choice, Hands' settings, your FM-1's flash chip as you said
+  it or as fm1-dock reported it, whether the Firmware Hub opens filtered for it, whether you have
   seen the first-use warning, the measured transfer speed for rig time estimates). The app icon colour you pick is
   kept by iOS.
 
@@ -49,8 +50,9 @@ None of this is sent anywhere by the app. Deleting the app deletes it.
 ## Your synth
 
 Everything the app sends over the USB cable goes to the FM-1 you plugged in: the installer pages' messages and the
-modules you choose to put on it. Nothing is read back from the FM-1 except what those operations need (which
-firmware and modules it runs, and its free space).
+modules you choose to put on it. When an FM-1 running fm1-dock is plugged in, the app also asks it, once, which flash
+chip it has (fm1-dock's read-only HELLO and INFO). Nothing is read back from the FM-1 except what those operations
+need (which firmware and modules it runs, its free space, its flash chip), and none of it leaves the phone.
 
 ## Questions
 

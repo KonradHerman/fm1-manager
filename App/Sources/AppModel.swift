@@ -121,6 +121,25 @@ final class AppModel {
 	private(set) var endpoints: [MIDIEndpointInfo] = []
 	private(set) var engineError: String?
 	let library = Library()
+	/// What is known about the FM-1's flash chip (asked, or read from fm1-dock's INFO); kept between launches.
+	var chip = ChipKnowledge.load() { didSet { chip.save() } }
+	/// The FM-1 port the chip was last read from (one read per connection).
+	@ObservationIgnored private var chipReadFor: String?
+
+	#if FM1_DOCK
+	/// Reads the flash chip from fm1-dock's INFO (HELLO, then INFO: read only, as fm1-dock's own page does), once per
+	/// connection, when an FM-1 that is not in update mode is plugged in. A firmware other than fm1-dock 0.8+ does not
+	/// say (Felucca's handshake carries only the firmware's identity), so then the person is asked instead.
+	func detectChip() async {
+		guard let fm1, fm1InUpdateMode == nil, chipReadFor != fm1.id, engine != nil else { return }
+		chipReadFor = fm1.id
+		try? await Task.sleep(nanoseconds: 1_500_000_000)          // (the device settles after it enumerates)
+		guard self.fm1?.id == fm1.id, let link = RigLinkHost.make(self) else { return }
+		defer { RigLinkHost.close(link) }
+		if let id = try? await link.readFlashID(), FlashChip.from(jedec: id) != nil { chip.detected(id) }
+	}
+	#endif
+
 	/// A screen asks to go somewhere from inside a sheet (FM1DockApp follows it).
 	var requestedRoute: Route?
 	#if FM1_DOCK

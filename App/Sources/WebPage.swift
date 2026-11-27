@@ -39,8 +39,14 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate, WKDownloadDel
 	/// Where a page's downloads go (a preset backup an installer saves): the library folder, visible in Files.
 	private let downloads: URL
 
-	init(site: Site, engine: MIDIEngine, library: URL) {
+	/// The address the page opens at (the site's own, or the Firmware Hub's with its newer-chip filter).
+	let startURL: URL
+	/// Runs once the first page has loaded (the Hub bar's filter check).
+	var afterFirstLoad: (@MainActor (WebPage) -> Void)?
+
+	init(site: Site, engine: MIDIEngine, library: URL, url: URL? = nil) {
 		self.site = site
+		startURL = url ?? site.url
 		downloads = library
 		let config = WKWebViewConfiguration()
 		#if FM1_DOCK
@@ -67,7 +73,7 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate, WKDownloadDel
 			webView.observe(\.canGoBack) { @Sendable [weak self] _, _ in onMain { self?.canGoBack = self?.webView.canGoBack ?? false } },
 			webView.observe(\.isLoading) { @Sendable [weak self] _, _ in onMain { self?.isLoading = self?.webView.isLoading ?? false } },
 		]
-		webView.load(URLRequest(url: site.url))
+		webView.load(URLRequest(url: startURL))
 		poll = Task { [weak self] in
 			while !Task.isCancelled {
 				await self?.checkBusy()
@@ -97,7 +103,7 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate, WKDownloadDel
 
 	func goBack() { webView.goBack() }
 	func reload() { loadError = nil; webView.reload() }
-	func goHome() { loadError = nil; webView.load(URLRequest(url: site.url)) }
+	func goHome() { loadError = nil; webView.load(URLRequest(url: startURL)) }
 
 	// MARK: the library's files to the page's file inputs
 
@@ -178,7 +184,13 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate, WKDownloadDel
 			}
 		}
 		#endif
+		if !hasLoaded, let f = afterFirstLoad { afterFirstLoad = nil; Task { @MainActor in f(self) } }
 		hasLoaded = true
+	}
+
+	/// Runs a script in the page and gives back what it returned (nil on an error).
+	func run(_ js: String) async -> Any? {
+		try? await webView.callAsyncJavaScript(js, arguments: [:], in: nil, contentWorld: .page)
 	}
 
 	func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {

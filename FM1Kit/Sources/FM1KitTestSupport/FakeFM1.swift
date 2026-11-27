@@ -24,6 +24,8 @@ public final class FakeFM1: @unchecked Sendable {
 	/// flash error does) and comes back after `dropFor` seconds as the same loader, waiting for UPDATE again. Once.
 	public var dropLoaderAfter: Int? { get { locked { _dropLoaderAfter } } set { locked { _dropLoaderAfter = newValue } } }
 	public var dropFor: TimeInterval = 1.5
+	/// The flash chip INFO reports (fm1-dock 0.8 on): 0xB36014 the newer chip, 0x856014 the older.
+	public var flashJEDEC: UInt32 = 0xB3_6014
 	private var _loaderVersion = "900"
 	private var _dropLoaderAfter: Int?
 	private var writeServed = 0
@@ -468,7 +470,7 @@ public final class FakeFM1: @unchecked Sendable {
 			guard let v = dockVersion, v >= "0.8" else { reply(0x3F, seq, [10]); break }   // (before 0.8: no INFO)
 			let room = dpPlace(Int.max)
 			func str(_ s: String, _ n: Int) -> [UInt8] { Array((Array(s.utf8) + [UInt8](repeating: 0, count: n)).prefix(n)) }
-			var b: [UInt8] = [0, 1, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0] + le(0x15_4016) + le(UInt32(room.total)) + le(UInt32(room.largest))
+			var b: [UInt8] = [0, 1, 0, 3, 1, 0, 0, 0, 0, 0, 0, 0] + le(flashJEDEC) + le(UInt32(room.total)) + le(UInt32(room.largest))
 			b += le(0x44000) + le(0) + le(360) + str("AC791N", 8) + str(v, 16) + str(v, 12) + str("FM-1", 16)
 			reply(cmd, seq, b)
 		default:

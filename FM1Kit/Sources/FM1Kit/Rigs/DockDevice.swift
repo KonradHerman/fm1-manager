@@ -21,11 +21,14 @@ public struct DockDeviceState: Sendable, Codable, Hashable {
 	/// LIST's index of the module playing.
 	public var current: Int
 	public var modules: [DeviceModule]
+	/// INFO's flash chip JEDEC id ("B36014"), from fm1-dock 0.8 on; nil from an older one.
+	public var flashID: String?
 
 	public init(identity: String?, dockVersion: String?, board: Board, abi: UInt32, free: Int, largest: Int, maxFile: Int,
-	            receiving: Bool, current: Int, modules: [DeviceModule]) {
+	            receiving: Bool, current: Int, modules: [DeviceModule], flashID: String? = nil) {
 		self.identity = identity; self.dockVersion = dockVersion; self.board = board; self.abi = abi; self.free = free
 		self.largest = largest; self.maxFile = maxFile; self.receiving = receiving; self.current = current; self.modules = modules
+		self.flashID = flashID
 	}
 
 	public var currentName: String? { modules.first { $0.index == current }?.name }

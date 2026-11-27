@@ -23,6 +23,7 @@ The FM-1's community installers are web pages that talk to the synth over Web MI
 What you need: an M-VAVE FM-1 and a USB cable that carries data (USB-C to USB-C on a USB-C iPhone; on a Lightning iPhone, Apple's Lightning to USB 3 Camera Adapter with power).
 
 Also in the app:
+• It knows the FM-1's newer flash chip: it reads it from fm1-dock or asks you, opens the Firmware Hub filtered to firmwares whose authors say they save on newer FM-1s, and lists the firmware problems we have seen ourselves.
 • A library: keep .fwsc firmware and .dock module files on the phone (in the Files app, or shared from Safari or Mail) and install them without a network connection.
 • App icon colours to match your FM-1.
 

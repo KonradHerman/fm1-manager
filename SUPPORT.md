@@ -42,6 +42,23 @@ the newer flash chip, from fm1-dock 0.9.0) stopped in the firmware's update load
 happened when the install was resumed from a Mac with the reference installer. The FM-1 was recovered with
 M-Flasher. The cause has not been established.
 
+### Known problems
+
+Firmware problems we have seen ourselves (the same list is in the app: Settings › Known problems, and from the
+Firmware Hub's bar). The data is in [`App/Resources/KnownProblems.json`](App/Resources/KnownProblems.json).
+
+- **Skiff 2.7 from the Firmware Hub, on a newer-chip FM-1 running fm1-dock 0.9.0** (2026-11, one unit): the install
+  stopped in Skiff's update loader at the first write and left the FM-1 in update mode; resuming from a Mac stopped
+  the same way. Recovered by writing Skiff with M-Flasher on a computer; the firmware itself runs once written.
+
+### Newer and older flash chips
+
+FM-1s sold from autumn 2026 (the M-VAVE logo under the screen) have a different flash chip (JEDEC id B36014) from
+earlier ones (856014). Firmware written only for the older chip cannot save on a newer FM-1, and its updates can
+fail. The app reads the chip from fm1-dock 0.8 or later when the FM-1 is plugged in, or asks you; on a newer FM-1 it
+opens the Firmware Hub with the Hub's own "Saves on newer FM-1s" filter on. That filter rests on each firmware
+author's own declaration, not on a test: Skiff above is declared as saving on newer FM-1s.
+
 ### fm1-dock misbehaves after adding a module
 
 fm1-dock's own safety nets, held while switching the FM-1 on (fm1-dock's README, section "Safety nets"):

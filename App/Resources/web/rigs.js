@@ -39,6 +39,12 @@ window.R = {
     R.progress = 0;
     return withDock(async (dock) => (await dock.deploy(bytes(b64), (x) => { R.progress = x; })).at);
   },
+  // the flash chip's JEDEC id from fm1-dock's INFO (0.8 on), or null: HELLO and INFO, both read only
+  async flash() {
+    const found = await findDock(await access());
+    if (!found) return null;
+    try { const info = await found.dock.info(); return info ? info.flashId : null; } finally { found.dock.close(); }
+  },
   async remove(name) { return withDock((dock) => dock.command(CMD.DELETE, name)); },
   async select(name) { return withDock((dock) => dock.command(CMD.SELECT, name)); },
   async abort() { return withDock(async (dock) => { dock.send(CMD.ABORT); await new Promise((r) => setTimeout(r, 200)); return "done"; }); },

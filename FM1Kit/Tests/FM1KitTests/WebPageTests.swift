@@ -283,6 +283,32 @@ final class LiveSiteTests: XCTestCase {
 		XCTAssertEqual(f.received.filter { $0 == FM1Protocol.upgrade }.count, 2, "nothing more was written on Install again")
 	}
 
+	/// The Hub's own "Saves on newer FM-1s" filter, as the app uses it: the page opened at #newchip has it on (only
+	/// cards flagged new or any shown), and its own checkbox turns it off again.
+	func testFirmwareHubNewerChipFilter() async throws {
+		let f = try FakeFM1()
+		let h = try WebHarness(filter: f.filter, allowedOrigins: ["https://thefirmwarehub.com"], userAgent: Self.iPhoneUA)
+		defer { h.close() }
+		let url = HubFilter.startURL(URL(string: "https://thefirmwarehub.com/")!, .filtered)
+		do { try await h.load(url, timeout: 40) } catch { throw XCTSkip("no network: \(error)") }
+		let visible = "[...document.querySelectorAll('#grid .fw')].filter((e) => !e.hidden && e.offsetParent !== null).map((e) => e.dataset.id)"
+		try await h.waitFor("document.querySelectorAll('#grid .fw').length > 20 && !!document.querySelector('#fpanel input[value=newchip]')", timeout: 30)
+		let on = try await h.js(HubFilter.isOnJS) as? Bool
+		XCTAssertEqual(on, true, "the page took #newchip")
+		let shownFiltered = try await h.js("return \(visible)") as? [String] ?? []
+		let catalog = try await h.js("return (await (await fetch('/catalog.json')).json()).firmwares.map((f) => [f.id, f.chip || ''])") as? [[String]] ?? []
+		let chipOf = Dictionary(catalog.map { ($0[0], $0[1]) }, uniquingKeysWith: { a, _ in a })
+		XCTAssertFalse(shownFiltered.isEmpty)
+		XCTAssertTrue(shownFiltered.allSatisfy { ["new", "any"].contains(chipOf[$0] ?? "?") }, "only newer-chip firmwares: \(shownFiltered.filter { !["new", "any"].contains(chipOf[$0] ?? "?") })")
+		let turned = try await h.js(HubFilter.turnOffJS) as? Bool
+		XCTAssertEqual(turned, true)
+		try await Task.sleep(nanoseconds: 500_000_000)
+		let off = try await h.js(HubFilter.isOnJS) as? Bool
+		XCTAssertEqual(off, false)
+		let shownAll = try await h.js("return \(visible)") as? [String] ?? []
+		XCTAssertGreaterThan(shownAll.count, shownFiltered.count, "Show all shows more")
+	}
+
 	func testDockSiteConsoleConnectsWithAnIPhoneUserAgent() async throws {
 		let f = try FakeFM1()
 		let h = try WebHarness(filter: f.filter, allowedOrigins: ["https://joakimeriksson.github.io"], userAgent: Self.iPhoneUA)

@@ -26,9 +26,15 @@ struct HomeView: View {
 				}
 				Section("Install") {
 					ForEach(Site.all) { site in
-						NavigationLink(value: Route.site(site)) {
-							Label { VStack(alignment: .leading) { Text(site.title); Text(site.detail).font(.caption).foregroundStyle(.secondary) } }
-								icon: { Image(systemName: site.symbol) }
+						if case let .shown(note) = visibility(site) {
+							NavigationLink(value: Route.site(site)) {
+								Label {
+									VStack(alignment: .leading) {
+										Text(site.title)
+										Text(site.detail + (note.map { "; \($0)" } ?? "")).font(.caption).foregroundStyle(.secondary)
+									}
+								} icon: { Image(systemName: site.symbol) }
+							}
 						}
 					}
 				}
@@ -60,6 +66,15 @@ struct HomeView: View {
 					Text("These are new and may change or misbehave.")
 				}
 				Section {
+					Picker("My FM-1's flash chip", selection: Binding(get: { app.chip.answer ?? .unsure }, set: { app.chip.say($0) })) {
+						Text("Newer (logo under the screen)").tag(FlashChip.newer)
+						Text("Older").tag(FlashChip.older)
+						Text("Not sure").tag(FlashChip.unsure)
+					}
+					if app.chip.chip == .newer {
+						Toggle("Firmware Hub: only firmwares that save on newer FM-1s", isOn: $app.chip.filterHub)
+					}
+					NavigationLink("Known problems") { KnownProblemsView() }
 					AppIconPicker().id("appIcon")
 					Picker("MIDI packets", selection: $app.packetAPI) {
 						Text("Universal (UMP)").tag(MIDIEngine.PacketAPI.universal)
@@ -70,10 +85,13 @@ struct HomeView: View {
 				} header: {
 					Text("Settings")
 				} footer: {
-					Text("Both MIDI APIs reach the same pages; switch only if an install misbehaves. Bluetooth MIDI is untested for installs: use USB.")
+					Text(chipFooter + " Both MIDI APIs reach the same pages; switch only if an install misbehaves. Bluetooth MIDI is untested for installs: use USB.")
 				}
 			}
 			.navigationTitle("FM-1 Manager")
+			#if FM1_DOCK
+			.task(id: app.fm1?.id) { await app.detectChip() }
+			#endif
 			.onAppear {
 				app.library.refresh()
 				#if DEBUG
@@ -84,6 +102,20 @@ struct HomeView: View {
 		}
 		.sheet(isPresented: $showBluetooth) { BluetoothMIDIView().ignoresSafeArea() }
 		.sheet(isPresented: $showAbout) { AboutView() }
+	}
+}
+
+extension HomeView {
+	/// Baud Girl (FM-1+VA) does not say whether it supports the newer flash chip: shown, with a note.
+	func visibility(_ site: Site) -> InstallerVisibility {
+		site.id == Site.baudGirl.id ? InstallerVisibility.of(support: .unknown, chip: app.chip.chip) : .shown(note: nil)
+	}
+
+	var chipFooter: String {
+		if app.chip.wasDetected, let id = app.chip.detectedID {
+			return "Flash chip \(id), read from fm1-dock\(app.chip.detectedAt.map { " on \($0.formatted(date: .abbreviated, time: .omitted))" } ?? "")."
+		}
+		return "The flash chip is read from fm1-dock 0.8 or later when it is plugged in; otherwise say which here (newer FM-1s have the logo under the screen)."
 	}
 }
 

@@ -82,6 +82,12 @@ final class RigsEndToEndTests: XCTestCase {
 		// Save what's on it: the same rig back, every module from the library
 		let state = try await l.readState()
 		XCTAssertEqual(state.dockVersion, "0.9", "INFO's version")
+		XCTAssertEqual(state.flashID, "B36014", "INFO's flash chip")
+		XCTAssertEqual(FlashChip.from(jedec: state.flashID), .newer)
+		fake.flashJEDEC = 0x85_6014
+		let older = try await l.readFlashID()
+		XCTAssertEqual(older, "856014")
+		XCTAssertEqual(FlashChip.from(jedec: older), .older)
 		XCTAssertEqual(state.board, .fm1)
 		XCTAssertEqual(state.identity, "FM-1_921")
 		let (captured, missing) = RigCapture.rig(named: "now", from: state, library: LibraryModule.scan(library))
