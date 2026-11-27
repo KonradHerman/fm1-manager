@@ -14,20 +14,25 @@ struct Site: Identifiable, Hashable {
 
 	static let hub = Site(id: "hub", title: "FM-1 Firmware Hub", detail: "thefirmwarehub.com: install whole firmwares",
 	                      url: URL(string: "https://thefirmwarehub.com/")!, symbol: "square.stack.3d.up")
+	/// Baud Girl (FM-1+VA, by Madeline): a firmware that is not open source; its maker's own installer, live from
+	/// baudgirl.com (nothing of it is in the app), in both configurations.
+	static let baudGirl = Site(id: "baudgirl", title: "Baud Girl (FM-1+VA)",
+	                           detail: "baudgirl.com: its maker's own installer; not open source",
+	                           url: URL(string: "https://baudgirl.com/work/FM-1+VA/install")!, symbol: "waveform.path")
 	#if FM1_DOCK
 	static let dock = Site(id: "dock", title: "fm1-dock", detail: "Joakim Eriksson's fm1-dock firmware: install it, add and remove its modules",
 	                       url: URL(string: "https://joakimeriksson.github.io/fm1-dock/")!, symbol: "puzzlepiece.extension")
 	static let local = Site(id: "local", title: "Install from Library", detail: "Your .fwsc and .dock files, offline",
 	                        url: URL(string: "fm1dock://app/local.html")!, symbol: "tray.full")
-	static let all = [hub, dock, local]
+	static let all = [hub, dock, baudGirl, local]
 
 	/// The hosts that open in the app (anything else goes to Safari) and get Web MIDI.
-	static let hosts = ["thefirmwarehub.com", "fm1.designburgapps.com", "joakimeriksson.github.io"]
+	static let hosts = ["thefirmwarehub.com", "fm1.designburgapps.com", "joakimeriksson.github.io", "baudgirl.com"]
 	static let midiOrigins = hosts.map { "https://\($0)" } + ["fm1dock://app"]
 	#else
 	// hub-only (FM1_DOCK off): the Firmware Hub alone; fm1-dock's site and the bundled offline page are not in the app
-	static let all = [hub]
-	static let hosts = ["thefirmwarehub.com", "fm1.designburgapps.com"]
+	static let all = [hub, baudGirl]
+	static let hosts = ["thefirmwarehub.com", "fm1.designburgapps.com", "baudgirl.com"]
 	static let midiOrigins = hosts.map { "https://\($0)" }
 	#endif
 	static let scheme = "fm1dock"

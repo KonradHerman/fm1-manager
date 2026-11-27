@@ -19,17 +19,19 @@ final class SiteTests: XCTestCase {
 		XCTAssertFalse(Site.opensInApp(URL(string: "https://github.com/joakimeriksson/fm1-dock")!))
 		XCTAssertFalse(Site.opensInApp(URL(string: "http://thefirmwarehub.com/")!))
 		XCTAssertFalse(Site.opensInApp(URL(string: "https://evil.thefirmwarehub.com.example/")!))
+		XCTAssertTrue(Site.opensInApp(URL(string: "https://baudgirl.com/work/FM-1+VA/install")!))
+		XCTAssertFalse(Site.opensInApp(URL(string: "https://www.baudgirl.com/")!), "baudgirl.com exactly")
 		#if FM1_DOCK
 		XCTAssertTrue(Site.opensInApp(URL(string: "https://joakimeriksson.github.io/fm1-dock/midi.html")!))
 		XCTAssertTrue(Site.opensInApp(URL(string: "fm1dock://app/local.html")!))
 		XCTAssertEqual(Set(Site.midiOrigins), ["https://thefirmwarehub.com", "https://fm1.designburgapps.com",
-		                                       "https://joakimeriksson.github.io", "fm1dock://app"])
-		XCTAssertEqual(Site.all.map(\.id), ["hub", "dock", "local"])
+		                                       "https://joakimeriksson.github.io", "https://baudgirl.com", "fm1dock://app"])
+		XCTAssertEqual(Site.all.map(\.id), ["hub", "dock", "baudgirl", "local"])
 		#else
 		XCTAssertFalse(Site.opensInApp(URL(string: "https://joakimeriksson.github.io/fm1-dock/midi.html")!))
 		XCTAssertFalse(Site.opensInApp(URL(string: "fm1dock://app/local.html")!))
-		XCTAssertEqual(Set(Site.midiOrigins), ["https://thefirmwarehub.com", "https://fm1.designburgapps.com"])
-		XCTAssertEqual(Site.all.map(\.id), ["hub"])
+		XCTAssertEqual(Set(Site.midiOrigins), ["https://thefirmwarehub.com", "https://fm1.designburgapps.com", "https://baudgirl.com"])
+		XCTAssertEqual(Site.all.map(\.id), ["hub", "baudgirl"])
 		#endif
 	}
 
@@ -46,6 +48,15 @@ final class SiteTests: XCTestCase {
 		}
 		XCTAssertNotNil(Bundle.main.url(forResource: "GPL-3.0", withExtension: "txt"), "the app's own licence text")
 		#endif
+	}
+
+	func testUpdateModeIsToldByThePortName() {
+		for n in ["Felucca Update", "JIANT Update", "FM-1 Update", "OTA", "ota", "FM-1 Update Test 1A2B3C4D"] {
+			XCTAssertTrue(AppModel.isUpdateLoader(n), n)
+		}
+		for n in ["FM-1", "Felucca", "SLOOP", "Rotary Controller", "Updated Synth"] {
+			XCTAssertFalse(AppModel.isUpdateLoader(n), n)
+		}
 	}
 
 	func testFM1PortNames() {
@@ -250,6 +261,29 @@ final class RigsAppTests: XCTestCase {
 	}
 
 	/// The app's rigs.html (fm1-dock's dock.js) over iOS's WebKit and CoreMIDI: a rig put on a FakeFM1.
+	/// A file a page saves (<a download>, as Baud Girl's installer saves a preset backup) lands in the library.
+	func testAPageDownloadIsSavedInTheLibrary() async throws {
+		let lib = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+		try FileManager.default.createDirectory(at: lib, withIntermediateDirectories: true)
+		defer { try? FileManager.default.removeItem(at: lib) }
+		let html = "<!doctype html><script>onload = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([new Uint8Array([1, 2, 3])])); a.download = 'presets-backup.bin'; document.body.append(a); a.click(); }</script>"
+		let fake = try FakeFM1()
+		let engine = try MIDIEngine(clientName: "download test", filter: fake.filter)
+		let site = Site(id: "t", title: "t", detail: "",
+		                url: URL(string: "data:text/html;base64," + Data(html.utf8).base64EncodedString())!, symbol: "doc")
+		let page = WebPage(site: site, engine: engine, library: lib)
+		let w = UIWindow(frame: CGRect(x: 0, y: 0, width: 300, height: 300))
+		w.addSubview(page.webView)
+		w.isHidden = false
+		defer { page.close(); w.isHidden = true }
+		let file = lib.appendingPathComponent("presets-backup.bin")
+		let end = Date().addingTimeInterval(10)
+		while !FileManager.default.fileExists(atPath: file.path) && Date() < end { try await Task.sleep(nanoseconds: 50_000_000) }
+		try await Task.sleep(nanoseconds: 300_000_000)
+		XCTAssertEqual(try? Data(contentsOf: file), Data([1, 2, 3]))
+		XCTAssertEqual(page.toast, "Saved presets-backup.bin in the library (Files › FM-1 Manager).")
+	}
+
 	func testApplyARigOnIOS() async throws {
 		let web = try XCTUnwrap(Bundle.main.url(forResource: "web", withExtension: nil))
 		let lib = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
