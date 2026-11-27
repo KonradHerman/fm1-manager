@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 #if canImport(WebKit)
+import CoreMIDI
 import FM1Kit
 import FM1KitTestSupport
 import WebKit
@@ -25,8 +26,21 @@ enum Repo {
 }
 
 /// The shim in a real WKWebView, over CoreMIDI to a FakeFM1 (the engine sees nothing else).
+/// On a CI runner CoreMIDI's server sometimes refuses new clients for the rest of the process (GitHub's macOS
+/// runners: MIDIClientCreate -2 from this suite on, on every run so far). There, and only there, the suite is
+/// skipped with the reason rather than failed; on a developer's Mac a refusal still fails the tests.
+func skipWhenCoreMIDIRefusesClientsOnCI() throws {
+	guard ProcessInfo.processInfo.environment["CI"] != nil else { return }
+	var client = MIDIClientRef()
+	let st = MIDIClientCreateWithBlock("FM1Kit probe" as CFString, &client, nil)
+	if st == noErr { MIDIClientDispose(client); return }
+	throw XCTSkip("CoreMIDI refuses new clients on this runner (MIDIClientCreate \(st)): skipped on CI only")
+}
+
 @MainActor
 final class WebMIDIShimTests: XCTestCase {
+	override func setUp() async throws { try skipWhenCoreMIDIRefusesClientsOnCI() }
+
 	static let page = """
 	<!doctype html><meta charset="utf-8"><title>shim test</title>
 	<script>
