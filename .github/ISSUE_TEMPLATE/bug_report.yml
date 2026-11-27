@@ -1,0 +1,85 @@
+name: Something went wrong
+description: An install, a page, a rig or another part of the app did not do what it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Is your FM-1 stuck in update mode, or won't it start?** Read [what to do](https://github.com/KonradHerman/fm1-manager/blob/main/SUPPORT.md#if-something-goes-wrong) first, then come back and tell us what happened.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - FM-1 Firmware Hub
+        - fm1-dock's page
+        - Baud Girl's installer
+        - Install from Library / the library
+        - Rigs
+        - Hands
+        - Something else in the app
+    validations:
+      required: true
+  - type: dropdown
+    id: stuck
+    attributes:
+      label: Is your FM-1 stuck?
+      options:
+        - "No"
+        - Stuck in update mode
+        - Won't start or shows nothing
+        - Not sure
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, step by step, what you expected, and what the screen said (word for word if you can).
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: App version and build
+      description: Settings › About, privacy and support shows it.
+      placeholder: 1.0 (8)
+    validations:
+      required: true
+  - type: input
+    id: phone
+    attributes:
+      label: iPhone model and iOS version
+      placeholder: iPhone 16, iOS 26.1
+    validations:
+      required: true
+  - type: dropdown
+    id: chip
+    attributes:
+      label: Your FM-1's flash chip
+      description: Newer FM-1s have the M-VAVE logo under the screen.
+      options:
+        - Newer (logo under the screen)
+        - Older
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware on the FM-1, and the one you were installing
+      placeholder: fm1-dock 0.9.0, installing Skiff 2.7
+  - type: dropdown
+    id: connection
+    attributes:
+      label: Connection
+      options:
+        - USB-C cable
+        - Lightning with Apple's camera adapter
+        - Bluetooth MIDI
+        - Something else
+  - type: textarea
+    id: screens
+    attributes:
+      label: Screenshots or a screen recording
+      description: Drag files in. A recording of the installer page is the fastest way to a fix.

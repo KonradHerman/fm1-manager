@@ -1,0 +1,24 @@
+name: An idea
+description: Something the app could do for FM-1 owners.
+labels: [idea]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What you want to do
+      description: What you are trying to do with your FM-1, and where the app gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would help
+      description: How you imagine it. Rough is fine.
+  - type: dropdown
+    id: chip
+    attributes:
+      label: Your FM-1's flash chip
+      options:
+        - Newer (logo under the screen)
+        - Older
+        - Not sure

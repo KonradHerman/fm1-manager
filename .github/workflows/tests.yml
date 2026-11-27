@@ -1,0 +1,49 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# The core's tests on macOS (offline: no live sites) and a simulator build of the app, on every push and pull
+# request. No secrets, no signing. The tests talk only to virtual MIDI endpoints they create.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use the newest Xcode on the runner
+        run: |
+          xcode=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
+          echo "Using $xcode"
+          sudo xcode-select -s "$xcode/Contents/Developer"
+          xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Core tests (macOS, offline)
+        working-directory: FM1Kit
+        env:
+          FM1_OFFLINE: "1"
+        run: swift test
+
+      - name: Generate the Xcode project
+        run: xcodegen
+
+      - name: Build the app for the simulator (full and hub-only)
+        run: |
+          for dock in YES NO; do
+            xcodebuild -project FM1Dock.xcodeproj -scheme FM1Dock -configuration Debug \
+              -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO FM1_DOCK=$dock build -quiet
+          done

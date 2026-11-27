@@ -1,186 +1,221 @@
-# FM-1 Manager
+<p align="center">
+  <img src="assets/readme/icon.png" width="128" height="128" alt="FM-1 Manager's app icon: five rounded keys in terracotta, one of them lit.">
+</p>
 
-An iPhone app for the M-VAVE FM-1 synth: it runs the FM-1's web installers, which need Web MIDI that Safari on iOS
-does not have, and adds a few things of its own (a library of firmware and module files, Rigs, Hands). It talks to
-the FM-1 over a USB cable through iOS's CoreMIDI.
+<h1 align="center">Your FM-1, from your iPhone.</h1>
 
-**This is an unofficial app.** It is not made by, affiliated with or endorsed by M-VAVE, the FM-1 Firmware Hub or
-fm1-dock.
+<p align="center">
+  Install firmware and fm1-dock modules on an M-VAVE FM-1 with nothing but a phone and a USB cable.<br>
+  Free, open source and unofficial. It collects nothing.
+</p>
+
+<!-- When TestFlight or the App Store has it, this line becomes the link to it. -->
+<h3 align="center">
+  <a href="#install-it-now">Install it now: build it with Xcode in five steps</a>
+</h3>
+
+<p align="center">
+  iPhone · iOS 17 or later · a USB data cable to the FM-1 (USB-C, or Apple's camera adapter on a Lightning iPhone)<br>
+  TestFlight and the App Store are on the way; this page will link them when they are real.<br>
+  <a href="SUPPORT.md">Help and recovery</a> · <a href="PRIVACY.md">Privacy</a> · <a href="CHANGELOG.md">What's new</a> · <a href="CONTRIBUTING.md">Contributing</a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/KonradHerman/fm1-manager/actions/workflows/tests.yml"><img src="https://github.com/KonradHerman/fm1-manager/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+</p>
 
 > [!WARNING]
-> **This app writes firmware and modules to your synth.** A cut cable, a flat battery or a bug can leave the FM-1 in
-> update mode or without a working firmware. Before you install anything, know how to recover:
-> fm1-dock's README lists its safety nets ([Safety nets](https://github.com/joakimeriksson/fm1-dock#safety-nets):
-> OCT+ at power-on for a safe start, OCT− at power-on for the USB rescue, HOME at power-on to stay in fm1-dock).
-> Beyond those, M-Flasher, a computer tool for the chip's own download mode, can write M-VAVE's stock firmware back;
-> that mode needs a computer and cannot be reached from an iPhone.
-> You use this app at your own risk.
+> **This app writes firmware to your synth.** It has been used on one iPhone and one FM-1, and the one whole-firmware
+> install tried from a phone failed and needed a computer to put right. Before you install a firmware, read
+> [what to do if it goes wrong](SUPPORT.md#if-something-goes-wrong). Adding and removing fm1-dock modules is the
+> gentler path; replacing the whole firmware is the risky one.
 
-## What it does, and how well it is tested
+<p align="center">
+  <img src="assets/readme/1-home.jpg" width="300" alt="FM-1 Manager's home screen: FM-1 connected, the installers listed under Install, the library, and Rigs under Experimental.">
+</p>
 
-Hardware so far: **one iPhone and one FM-1** (a unit with the newer flash chip, running fm1-dock 0.9.0), used by the
-app's owner. Nothing has been tried on an iPad, on an FM-1 with the older flash chip, on an SMK-37, or with any other
-firmware than fm1-dock and the installers below. Everything else in this list has only run against a **simulated
-FM-1** (`FakeFM1`, see below) on virtual CoreMIDI endpoints, on a Mac and in the iOS simulator.
+## Web MIDI, where Safari has none.
 
-| Feature | What it is | Tested |
+The FM-1's installers are web pages that need Web MIDI, which no iPhone browser has. FM-1 Manager opens them as they
+are and connects them to your FM-1 over the cable: the FM-1 Firmware Hub, fm1-dock's page and Baud Girl's installer.
+
+<img src="assets/readme/2-firmware-hub.jpg" width="300" alt="The FM-1 Firmware Hub open in the app, connected: its Connect FM-1 button says the FM-1 runs fm1-dock 0.9.0.">
+
+## Modules without a computer.
+
+fm1-dock turns the FM-1 into a host for many synths. Its own page runs here unchanged: install fm1-dock, then add
+and remove its modules.
+
+<img src="assets/readme/3-fm1-dock.jpg" width="300" alt="fm1-dock's page in the app, showing FM-1 connected · fm1-dock 0.9 and the module catalogue below.">
+
+## A shelf for your files.
+
+Keep .fwsc firmware and .dock modules on the phone, in the Files app or shared from Safari and Mail, and install
+them offline.
+
+<img src="assets/readme/4-library.jpg" width="300" alt="The library: eight .dock module files, each with its size.">
+
+## Swap whole sets of synths. (Experimental)
+
+The FM-1 has room for only a few add-on modules at a time. A rig is a named set kept on the phone; putting it on
+changes only what differs and checks the FM-1 after every step.
+
+<img src="assets/readme/5-rig-plan.jpg" width="300" alt="A rig's plan before Apply: remove ARP 2600 and KEYS, add ENSEMBLE and EMINENT, play AMB-1, about 19 seconds.">
+
+## Also in there
+
+- **Update mode, explained.** If an install stops, the app recognises the FM-1's update mode and says what to do next.
+- **Knows its chip.** It reads the FM-1's flash chip from fm1-dock, or asks, and opens the Hub filtered to firmwares that save on newer FM-1s.
+- **Known problems.** The firmware problems we have seen ourselves, in the app and in [SUPPORT.md](SUPPORT.md).
+- **Hands.** An unfinished touch keyboard, XY pad and tilt control that play the FM-1. (Experimental)
+- **Eight colours.** App icons to match your FM-1, in Settings.
+- **Backups land safely.** A file an installer saves, such as Baud Girl's preset backup, goes into your library.
+- **Nothing phones home.** No account, no analytics, no tracking; see [PRIVACY.md](PRIVACY.md).
+
+<p align="center">
+  <img src="assets/readme/6-icon-colours.jpg" width="300" alt="Settings: the eight app icon colours, the MIDI packet choice, Bluetooth MIDI, and About.">
+</p>
+
+## Honest status
+
+Tried on hardware: **one iPhone and one FM-1** with the newer flash chip, running fm1-dock 0.9.0. Everything else has
+run only against a simulated FM-1, in automated tests on a Mac and in the iOS simulator.
+
+| Part | Details | Status |
 | --- | --- | --- |
-| **FM-1 Firmware Hub** | thefirmwarehub.com, unchanged, with Web MIDI supplied by the app: install whole firmwares | The owner reports it working on the one iPhone and FM-1 above. One whole-firmware install has been tried from the phone: Skiff 2.7, on that newer-chip FM-1, from fm1-dock 0.9.0. It **failed in the firmware's update loader** (early in its write); resumed from a Mac with the reference installer, it failed the same way; the FM-1 was recovered with M-Flasher. The cause is not established. Automated: connects to the simulated FM-1; with a simulated loader that drops out mid-write, the Hub reports "lost" and, on Install again, refuses to resume another firmware's loader ("foreign"). |
-| **Baud Girl (FM-1+VA)** | baudgirl.com's own installer for its firmware, which is not open source and not part of this app; the app only gives the page Web MIDI | Not tried on hardware. Automated (live page, simulated FM-1): it finds the FM-1 and gets as far as offering the install; the install itself was never run. |
-| **fm1-dock's page** | joakimeriksson.github.io/fm1-dock, unchanged: install fm1-dock, add and remove its modules, its console | The owner reports it working on the one iPhone and FM-1 above; which operations were run there was not recorded. Automated: its console and device panel connect to the simulated FM-1, and a module goes in through its file input. |
-| **Library** | .fwsc and .dock files kept in the app (visible in Files as On My iPhone › FM-1 Manager); import from Files, Safari, Mail; hand a file to a page's file input | Simulated FM-1 and simulator only. |
-| **Install from Library** | an offline page that installs a library file with fm1-dock's own installer code | Simulated FM-1 only, including a whole 610 KiB firmware install (both update stages, every byte checked). Not yet on hardware. |
-| **App icon colours** | eight icon colours to match your FM-1, chosen in Settings | Simulator. |
+| FM-1 Firmware Hub and fm1-dock's page | Reported working on that phone and FM-1; exactly which operations was not recorded. | ~ Partly |
+| fm1-dock modules | Add and remove through fm1-dock's page or the library; on hardware, not recorded. Simulated: every byte checked. | ~ Partly |
+| Whole-firmware installs | One tried from a phone: Skiff 2.7 from the Hub stopped in its own update loader; the same from a Mac; recovered with M-Flasher. Simulated: 610 KiB installs, cut-offs and resumes. | ✗ Failed once |
+| Newer-chip FM-1 (logo under the screen) | The unit above. | ~ Partly |
+| Older-chip FM-1 | Never tried. | ✗ Not yet |
+| Baud Girl's installer | Live page, simulated FM-1: it finds the FM-1 and offers the install; never run further. | ~ Partly |
+| Rigs | Simulated FM-1 only, its module area modelled on fm1-dock's own code. | ✗ Not yet on hardware |
+| Hands | Crashed on opening on a real iPhone in build 4; fixed in build 6, not yet confirmed. Feel and latency untested. | ~ Partly |
+| Bluetooth MIDI | Pairing is there; installing over Bluetooth was never tried. Use USB. | ✗ No |
+| iPad | Off for 1.0: nobody has tried it, and an App Store app can add iPad later but never take it away. | ✗ No |
 
-**Experimental** (on the home screen under "Experimental": new, and may change or misbehave):
+<h3 align="center">
+  <a href="#install-it-now">Install it now</a>
+</h3>
 
-| Feature | What it is | Tested |
-| --- | --- | --- |
-| **Rigs** | named sets of fm1-dock modules kept on the phone; "Save what's on my FM-1"; Apply changes only what differs, plans around the module area's free gaps, checks the device after every step, and can Resume after a cut cable; modules from fm1-dock's published catalogue, checked against its SHA-256 | Simulated FM-1 only (its module area modelled on fm1-dock's `dock.c`). In a TestFlight build on the owner's phone, **no result reported yet**. |
-| **Hands** | a performance screen: XY pad (CC 74 / 71 by default, fm1-dock's KNOB1 / KNOB2), a touch keyboard with slides, latch, scale lock and velocity by touch position, tilt to a chosen control while held, panic | Unfinished. Build 4 crashed on opening it on a real iPhone (fixed since, not yet confirmed on the phone). MIDI logic tested against a virtual destination (no stuck notes, rate limits, ranges). The feel, the latency and tilt from the real motion sensor: untested. |
-| **Jam in GarageBand** | a note on using the FM-1 as GarageBand's keyboard; a link to GarageBand in the App Store | Not tested. fm1-dock's firmware declares a USB audio input, but nobody has tried recording it in GarageBand. |
+<p align="center">
+  It is unofficial: not made by or affiliated with M-VAVE, the FM-1 Firmware Hub, fm1-dock or Baud Girl.<br>
+  Questions and problems go to <a href="https://github.com/KonradHerman/fm1-manager/issues">this repository's issues</a>, not to them.
+</p>
 
-Known rough edges are listed under [Contributing](#contributing).
+## Standing on
 
-**iPhone only for now.** Nobody has used the app on an iPad yet, and a device family can be added to an App Store app
-later but never taken away, so 1.0 is for iPhone. iPad support is wanted: if you have an iPad and an FM-1, see
-[Contributing](#contributing).
+This app is a thin layer over other people's work, and it would be nothing without it:
 
-**Privacy:** the app collects nothing and has no account; [PRIVACY.md](PRIVACY.md) says exactly what it connects to.
-**Help:** [SUPPORT.md](SUPPORT.md).
+- **[fm1-dock](https://github.com/joakimeriksson/fm1-dock)** by Joakim Eriksson: the firmware, its page and the
+  installer code the app carries.
+- **[Felucca](https://github.com/hugelton/Felucca)** by Leo Kuroshita (Hügelton Instruments): the FM-1's open
+  firmware and its update protocol, `fm1ota.js`.
+- **[The FM-1 Firmware Hub](https://thefirmwarehub.com)**: every open FM-1 firmware in one place, with the installer
+  the app opens.
+- **[Baud Girl](https://baudgirl.com/work/FM-1+VA/)** by Madeline: FM-1+VA and its own installer.
+- Every firmware author on the Hub, and M-VAVE for a synth that can be opened up like this.
 
-## Building it
+---
 
-You need a Mac with **Xcode 26** (built with 26.6), **[XcodeGen](https://github.com/yonaskolb/XcodeGen)** (`brew
-install xcodegen`) and an Apple developer account (a free one is enough to run it on your own phone). iOS 17 or later.
+# Build it yourself
 
-```sh
-git clone <this repository> fm1-manager && cd fm1-manager
-xcodegen                      # writes FM1Dock.xcodeproj from project.yml (the project file is not committed)
-open FM1Dock.xcodeproj
+## Install it now
+
+Today the only way onto your phone is to build it. It takes about ten minutes the first time.
+
+1. A Mac with **Xcode 26** (from the App Store) and **[XcodeGen](https://github.com/yonaskolb/XcodeGen)**:
+   `brew install xcodegen`.
+2. Get the code and make the Xcode project:
+   ```sh
+   git clone https://github.com/KonradHerman/fm1-manager.git && cd fm1-manager
+   xcodegen
+   ```
+3. Make it yours. Add your Apple ID in Xcode › Settings › Accounts (a free one is enough; it gets a Personal Team).
+   In `project.yml`, set `DEVELOPMENT_TEAM` to that team's ID (Xcode shows it in the target's Signing &
+   Capabilities when you pick the team) and `PRODUCT_BUNDLE_IDENTIFIER` to a bundle id of your own, such as
+   `com.yourname.fm1`. Run `xcodegen` again.
+4. Plug in your iPhone, turn on Developer Mode (Settings › Privacy & Security › Developer Mode), open
+   `FM1Dock.xcodeproj` and choose your iPhone at the top.
+5. Press Run. The first time, trust your developer profile on the phone (Settings › General › VPN & Device
+   Management).
+
+With a free Apple ID the app stops opening after 7 days; press Run again to renew it.
+
+## How it works
+
+```
+App/                 the iPhone app (SwiftUI): home, page view, library, Rigs, Hands, settings
+  Resources/web/     fm1-dock's installer JavaScript (unmodified), the offline page and Rigs' page
+  Resources/KnownProblems.json   firmware problems seen first-hand (format in App/Sources/KnownProblems.swift)
+AppTests/            the app's tests, in the iOS simulator
+FM1Kit/              the core as a Swift package that also builds on macOS
+  Sources/FM1Kit/            CoreMIDI, the Web MIDI bridge, Rigs, Hands, the chip rules
+  Sources/FM1KitTestSupport/ the simulated FM-1 and a web view harness
+  Tests/FM1KitTests/         the core's tests, on a Mac
+store/               the App Store text and screenshots
+scripts/             screenshots.sh, testflight.sh
+project.yml          the Xcode project's source (xcodegen); the generated project is not committed
 ```
 
-To sign it as yourself, change two lines in `project.yml` and run `xcodegen` again:
+- **Web MIDI for a web view.** `FM1Kit/Sources/FM1Kit/Resources/webmidi.js` is injected at document start into
+  pages of an allow-list (`Site.midiOrigins` in `App/Sources/AppModel.swift`: thefirmwarehub.com,
+  fm1.designburgapps.com, joakimeriksson.github.io, baudgirl.com and the app's own `fm1dock://app` pages). It gives
+  them `navigator.requestMIDIAccess` with SysEx; any other site gets no MIDI at all. `WebMIDIBridge.swift` carries
+  it to and from Swift.
+- **CoreMIDI.** `MIDIEngine.swift` lists ports, connects inputs, sends through the UMP or the older packet-list API,
+  and turns whatever packets arrive into whole messages (`MIDIStreamParser.swift`, `UMP.swift`): one event per SysEx.
+- **The app's own pages** are served from the bundle under `fm1dock://app/` (`LocalSchemeHandler`), the library at
+  `fm1dock://app/library/`.
+- **DockLink** (`FM1Kit/Sources/FM1Kit/Rigs/DockLink.swift`) is the one place the app itself talks to fm1-dock on
+  the device (Rigs, the flash chip). It runs fm1-dock's own `dock.js` in a hidden web view; a native version could
+  replace it without touching the rest.
+- **The rig planner** (`RigPlanner.swift`) is a pure function: device state, rig and library in, steps or a reason
+  out. It models the module area as fm1-dock's `dock.c` does and checks its model against the device before it plans.
+- **Hands** (`FM1Kit/Sources/FM1Kit/Hands.swift`) sends straight from the touch handlers to CoreMIDI, limits each
+  control to 200 messages a second, and lets every note go on cancel, leaving, backgrounding and unplugging.
+- **The flash chip** (`FlashChip.swift`): read from fm1-dock's INFO, or asked; the Hub's own `#newchip` filter.
 
-- `DEVELOPMENT_TEAM`: your team ID (developer.apple.com › Membership). It is set in this one place.
-- `PRODUCT_BUNDLE_IDENTIFIER` of the `FM1Dock` target: a bundle id of your own (`com.klhoud.fm1` is the owner's).
+What fm1-dock's flash can and cannot do, found while building Rigs: a module cannot be read back off the FM-1, so
+keep its file; a module's settings and presets stay in flash when it is removed and come back with it, unless another
+module needed their slot meanwhile (8 settings records, 9 preset banks), and nothing over USB copies them out.
 
-The project, target, scheme and product are still called `FM1Dock` internally (the app's earlier name); what you see
-on the phone is "FM-1 Manager".
+## The FM1_DOCK switch
 
-### The FM1_DOCK switch
+`FM1_DOCK` in `project.yml` decides whether fm1-dock's own code goes into the app. `YES` (the default, and what
+ships) has fm1-dock's page, the library, Install from Library and Rigs, and carries fm1-dock's JavaScript. `NO` is the
+hub-only app: the Firmware Hub, Baud Girl's installer and Hands, with none of fm1-dock's files. Change it in
+`project.yml`, or pass `FM1_DOCK=NO` to `xcodebuild` for one build.
 
-`FM1_DOCK` in `project.yml` decides whether fm1-dock's own code goes into the app:
+## Tests
 
-- `YES` (the default, and what ships): fm1-dock's site, the library, Install from Library and Rigs. The app then
-  carries fm1-dock's installer JavaScript (`App/Resources/web/`).
-- `NO`: the hub-only app: the Firmware Hub and Hands, and none of fm1-dock's files in the bundle.
-
-Change it in `project.yml` and run `xcodegen`, or for one build pass `FM1_DOCK=NO` to `xcodebuild`.
-
-### Tests
-
-The tests create their own virtual MIDI endpoints and only ever talk to those, so they are safe to run with a real
-FM-1 plugged into the Mac.
+The tests talk only to virtual MIDI endpoints they create, so they are safe with a real FM-1 plugged into the Mac.
+Some load the live sites; `FM1_OFFLINE=1` skips those. A few use fm1-dock's published files and skip without a
+checkout of it (`FM1_DOCK_DOCS=/path/to/fm1-dock/docs`).
 
 ```sh
-# the MIDI core, Rigs and Hands on macOS (some tests load the live sites; FM1_OFFLINE=1 skips them)
-cd FM1Kit && FM1_OFFLINE=1 swift test
+cd FM1Kit && FM1_OFFLINE=1 swift test        # the core, on a Mac
 
-# the app's tests in the iOS simulator, both configurations
+# the app, in the iOS simulator, in both configurations
 xcodebuild -project FM1Dock.xcodeproj -scheme FM1Dock -destination 'platform=iOS Simulator,name=iPhone 17 Pro' test
 xcodebuild -project FM1Dock.xcodeproj -scheme FM1Dock -destination 'platform=iOS Simulator,name=iPhone 17 Pro' FM1_DOCK=NO test
 ```
 
-Debug builds also compile the simulated FM-1 (`FM1Kit/Sources/FM1KitTestSupport`) into the app, for its tests and for
-the store screenshots: `scripts/screenshots.sh` launches the app with `-FM1Demo` (see `App/Sources/DemoMode.swift`),
-which attaches a simulated FM-1 that the app's MIDI engine sees alone. Release builds leave all of that out.
+## The simulated FM-1 and the demo
 
-Debug builds may create virtual MIDI endpoints (iOS allows that only with the `audio` background mode, which
-`App/Info.plist` adds for Debug alone); Release builds do not have it.
+`FakeFM1` (`FM1Kit/Sources/FM1KitTestSupport/FakeFM1.swift`) answers on virtual endpoints as an FM-1 does: the
+updater's handshake and reads, fm1-dock's commands and INFO, its module area placed as `dock.c` places it, and on
+request a loader that drops out mid-write. Debug builds compile it into the app for the screenshots:
+`scripts/screenshots.sh` launches the app with `-FM1Demo` (`App/Sources/DemoMode.swift`), which attaches a
+simulated FM-1 that the app's MIDI engine sees alone. Release builds leave all of it out.
 
-## How it works
+## Licence
 
-- **Web MIDI for a web view.** `FM1Kit/Sources/FM1Kit/Resources/webmidi.js` is injected at document start into the
-  pages of a few allowed origins (`Site.midiOrigins` in `App/Sources/AppModel.swift`: thefirmwarehub.com,
-  fm1.designburgapps.com, joakimeriksson.github.io and the app's own `fm1dock://app` pages). It provides
-  `navigator.requestMIDIAccess` with SysEx and no permission prompt; other origins get no Web MIDI at all.
-  `WebMIDIBridge.swift` carries it to and from Swift.
-- **CoreMIDI.** `MIDIEngine.swift` lists ports (with a filter the tests use to see only their own), connects inputs,
-  sends with either the UMP or the older packet-list API (switchable in Settings), and turns whatever packets CoreMIDI
-  delivers into whole messages (`MIDIStreamParser.swift`, `UMP.swift`): one event per SysEx, F0 to F7.
-- **The app's own pages** are served from the bundle under `fm1dock://app/` (`LocalSchemeHandler`), with the library
-  at `fm1dock://app/library/`.
-- **DockLink** (`FM1Kit/Sources/FM1Kit/Rigs/DockLink.swift`) is the one place where Rigs talk to fm1-dock on the
-  device. Today it runs fm1-dock's own `dock.js` in a hidden web view (`App/Resources/web/rigs.js`); a native
-  implementation could replace it without touching the rest.
-- **The rig planner** (`RigPlanner.swift`) is a pure function: device state + rig + library in, steps or a reason
-  out. It models the module area as fm1-dock's `dock.c` does (first fit, 4 KiB sectors, 296 KiB on an FM-1) and
-  checks its model against what the device reports before it plans. `RigApplier.swift` runs a plan step by step.
-- **Hands** (`FM1Kit/Sources/FM1Kit/Hands.swift`, screen in `App/Sources/HandsView.swift`) sends from the touch
-  handlers straight to CoreMIDI, limits each control to 200 messages a second, and lets every note go on cancel,
-  on leaving the screen, on going to the background and on unplug.
-- **The simulated FM-1** (`FM1Kit/Sources/FM1KitTestSupport/FakeFM1.swift`) answers on virtual endpoints as an FM-1
-  running fm1-dock does: the updater's handshake and reads, and fm1-dock's commands, with its module area placed
-  as `dock.c` places it.
-
-## What fm1-dock's flash can and cannot do (found while building Rigs)
-
-- A module cannot be read back off the FM-1: keep its file. The app marks modules that are on the device but not in
-  your library, and asks separately before removing one.
-- A module's settings and presets stay in the FM-1's flash when it is removed and come back when it is added again,
-  unless another module needed their place meanwhile (fm1-dock keeps 8 settings records and 9 preset banks). Nothing
-  over USB can copy them to the phone.
-
-## Credits and licence
-
-FM-1 Manager is free software under the **GNU General Public License, version 3 only** (`GPL-3.0-only`, full text
-in [LICENSE](LICENSE)). Every source file carries an SPDX line saying so.
-
-It includes, **unmodified**, files from other projects under the same licence:
-
-- `App/Resources/web/dock.js`, `App/Resources/web/install/fm1install.js` and `App/Resources/web/install/ports.js`:
-  from [fm1-dock](https://github.com/joakimeriksson/fm1-dock) by Joakim Eriksson.
-- `App/Resources/web/install/fm1ota.js`: Felucca's FM-1 update protocol, Copyright (C) 2026 Leo Kuroshita
-  (@kurogedelic), Hügelton Instruments, as fm1-dock carries it (with fm1-dock's additions for the SMK-37).
-
-**Ported or derived** (written in Swift for this app from their sources):
-
-- `FakeFM1.swift` and `FM1Protocol.swift` (test support only, not in the app): the simulated device after fm1-dock's
-  `docs/demo.js`, `docs/dock.js`, `install/fm1ota.js` and `firmware/src/dock.c`.
-- The port-name pattern that recognises an FM-1 (`AppModel.looksLikeFM1`): after fm1-dock's `install/ports.js` and
-  the FM-1 Firmware Hub page's own list of port names.
-
-Whether these files may be distributed through Apple's App Store is being discussed with their authors; the
-`FM1_DOCK=NO` build leaves fm1-dock's files out entirely.
-
-The FM-1 Firmware Hub and fm1-dock's pages are loaded from their own sites at run time; they are not part of this
-repository.
-
-## Contributing
-
-Pull requests are welcome. What would help most:
-
-- **Whole-firmware installs from a phone**: which firmwares, on which flash chip, from which firmware, and what the
-  installer page said if it failed.
-- **Testing on other hardware**: FM-1 units with the older flash chip, iPads, iPhones with Lightning (through Apple's
-  USB 3 camera adapter), and firmwares other than fm1-dock. Say what worked and what did not.
-- **Rigs on a real FM-1**: the first check is "Save what's on my FM-1", which shows the FM-1's free space and largest
-  gap next to the app's model of them. If those two ever disagree, that is a bug worth reporting.
-- **Hands on a real FM-1**: latency, stuck notes, how tilt feels.
-
-Known issues and rough edges:
-
-- **Whole-firmware installs**: the one tried from a phone failed in the firmware's own update loader and needed
-  M-Flasher on a computer to recover (see the Firmware Hub row above and [SUPPORT.md](SUPPORT.md)). The app now
-  recognises update mode and says what to do, but it cannot finish an install the loader itself abandons.
-
-- Updating a module to another version, or moving one to make room, removes it first. That briefly frees its
-  settings and preset slots for other modules.
-- Rigs can only be added through Files (the Rigs folder); "Open in" for a shared rig is not wired up.
-- Tilt reads side-to-side roll only, so in landscape it probably uses the wrong axis.
-- The rig editor's size meter assumes an FM-1's 296 KiB; the SMK-37's two module areas are handled by the planner
-  but not shown.
-- The hub-only build still contains the Rigs Swift code (unused there); only fm1-dock's files are left out.
-- GarageBand is linked through the App Store, because its URL scheme could not be confirmed.
-- Bluetooth MIDI can be paired in Settings, but installing over Bluetooth is untested; use USB.
+FM-1 Manager is free software under the [GNU General Public License, version 3 only](LICENSE) (`GPL-3.0-only`); every
+source file says so. It includes, unmodified, files from projects under the same licence:
+`App/Resources/web/dock.js`, `install/fm1install.js` and `install/ports.js` from fm1-dock (Joakim Eriksson), and
+`install/fm1ota.js`, Felucca's update protocol (Copyright (C) 2026 Leo Kuroshita, Hügelton Instruments), as fm1-dock
+carries it. The simulated FM-1 is written after fm1-dock's `demo.js`, `dock.js`, `fm1ota.js` and `dock.c`; the
+pattern that recognises an FM-1's port after fm1-dock's `ports.js` and the Firmware Hub's list. Whether fm1-dock's
+files may go through Apple's App Store is being discussed with their authors; `FM1_DOCK=NO` leaves them out.
+The installer sites are loaded from their own servers at run time and are not part of this repository.

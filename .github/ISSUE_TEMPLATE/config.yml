@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: My FM-1 is stuck in update mode or won't start
+    url: https://github.com/KonradHerman/fm1-manager/blob/main/SUPPORT.md#if-something-goes-wrong
+    about: What to do, step by step, before anything else.
+  - name: Questions and ideas
+    url: https://github.com/KonradHerman/fm1-manager/discussions
+    about: Ask, share what worked on your FM-1, or float an idea.
