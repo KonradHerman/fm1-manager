@@ -17,7 +17,7 @@ struct PageDialog: Identifiable {
 
 /// One page in a WKWebView with Web MIDI: its navigation, its dialogs, and whether an install is running there.
 @MainActor @Observable
-final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate {
+final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate, WKDownloadDelegate {
 	let site: Site
 	let webView: WKWebView
 	let bridge: WebMIDIBridge
@@ -36,8 +36,12 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 	private var poll: Task<Void, Never>?
 	private var observers: [NSKeyValueObservation] = []
 
+	/// Where a page's downloads go (a preset backup an installer saves): the library folder, visible in Files.
+	private let downloads: URL
+
 	init(site: Site, engine: MIDIEngine, library: URL) {
 		self.site = site
+		downloads = library
 		let config = WKWebViewConfiguration()
 		#if FM1_DOCK
 		let web = Bundle.main.url(forResource: "web", withExtension: nil)!
@@ -119,6 +123,9 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 
 	func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction) async -> WKNavigationActionPolicy {
 		guard let url = action.request.url else { return .cancel }
+		// a file the page saves (<a download>, as Baud Girl's installer saves a backup of the presets): kept in the
+		// library rather than shown in place of the page
+		if action.shouldPerformDownload { return .download }
 		let main = action.targetFrame?.isMainFrame ?? true
 		if !main { return .allow }                               // (frames inside a page: the page's own business)
 		if !Site.opensInApp(url) {                                // other sites, mail, the App Store: not here
@@ -131,6 +138,34 @@ final class WebPage: NSObject, WKNavigationDelegate, WKUIDelegate {
 		}
 		return .allow
 	}
+
+	func webView(_ webView: WKWebView, decidePolicyFor response: WKNavigationResponse) async -> WKNavigationResponsePolicy {
+		response.canShowMIMEType ? .allow : .download
+	}
+
+	func webView(_ webView: WKWebView, navigationAction: WKNavigationAction, didBecome download: WKDownload) { download.delegate = self }
+	func webView(_ webView: WKWebView, navigationResponse: WKNavigationResponse, didBecome download: WKDownload) { download.delegate = self }
+
+	func download(_ download: WKDownload, decideDestinationUsing response: URLResponse, suggestedFilename: String) async -> URL? {
+		let name = suggestedFilename.isEmpty ? "download" : suggestedFilename
+		let base = (name as NSString).deletingPathExtension, ext = (name as NSString).pathExtension
+		var url = downloads.appendingPathComponent(name), n = 2
+		while FileManager.default.fileExists(atPath: url.path) {
+			url = downloads.appendingPathComponent(ext.isEmpty ? "\(base) \(n)" : "\(base) \(n).\(ext)"); n += 1
+		}
+		pendingDownload = url.lastPathComponent
+		return url
+	}
+
+	func downloadDidFinish(_ download: WKDownload) {
+		toast = "Saved \(pendingDownload ?? "the file") in the library (Files › FM-1 Manager)."
+	}
+
+	func download(_ download: WKDownload, didFailWithError error: Error, resumeData: Data?) {
+		toast = "The download did not finish: \(error.localizedDescription)"
+	}
+
+	private var pendingDownload: String?
 
 	func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) { loadError = nil }
 	func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

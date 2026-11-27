@@ -88,6 +88,14 @@ struct BrowserView: View {
 			.safeAreaInset(edge: .top, spacing: 0) {
 				VStack(spacing: 0) {
 					if app.fm1 == nil && !page.busy { NoDeviceBanner() }
+					// the FM-1 in its update loader once the page's own install has stopped (during an install it
+					// passes through update mode on purpose; the page says busy then)
+					if let loader = app.fm1InUpdateMode, !page.pageBusy {
+						UpdateModeGuide(port: loader.name, compact: true)
+							.padding(12)
+							.background(Color.orange.opacity(0.14), in: RoundedRectangle(cornerRadius: 12))
+							.padding(.horizontal, 12).padding(.top, 6)
+					}
 					// (only while the page itself says an install runs: plain SysEx traffic, a Connect, keeps the
 					// screen awake but is no install)
 					if page.pageBusy {

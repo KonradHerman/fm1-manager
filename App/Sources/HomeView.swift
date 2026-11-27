@@ -187,6 +187,8 @@ struct DeviceStatus: View {
 	var body: some View {
 		if let err = app.engineError {
 			Label(err, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red)
+		} else if let loader = app.fm1InUpdateMode {
+			UpdateModeGuide(port: loader.name)
 		} else if let fm1 = app.fm1 {
 			Label {
 				VStack(alignment: .leading) {
